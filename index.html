@@ -239,20 +239,34 @@
         // กำหนดสถานะการเลื่อนหน้าจออัตโนมัติ
         let isAutoScrollActive = true;
         let animationFrameId = null;
+        let isAtEnd = false; // สถานะใหม่เพื่อตรวจสอบว่าอยู่ท้ายหน้าและกำลังรอหรือไม่
+        let endScrollTimer = null; // ตัวจับเวลาใหม่สำหรับช่วงที่หยุดรอ
 
         // ฟังก์ชันสำหรับเริ่มการเลื่อนหน้าจอแบบอัตโนมัติ
         function startAutoScroll() {
-            if (!isAutoScrollActive) {
-                // ถ้าสถานะไม่ใช่ Active ก็ไม่ทำอะไร
+            // หยุดการทำงานถ้าสถานะการเลื่อนถูกปิดใช้งานหรืออยู่ท้ายหน้าและกำลังรอ
+            if (!isAutoScrollActive || isAtEnd) {
                 return;
             }
             
             // เลื่อนหน้าจอลง 1 พิกเซลต่อเฟรม
             window.scrollBy(0, 1);
             
-            // ตรวจสอบว่าถึงท้ายหน้าจอแล้วหรือยัง ถ้าถึงแล้วให้กลับไปด้านบนสุด
+            // ตรวจสอบว่าถึงท้ายหน้าจอแล้วหรือยัง
             if (window.scrollY >= document.documentElement.scrollHeight - window.innerHeight) {
-                window.scrollTo(0, 0);
+                // ถ้าถึงแล้ว ให้ตั้งค่าสถานะว่าอยู่ท้ายหน้าและหยุดการเลื่อน
+                isAtEnd = true;
+                console.log("Reached end of page. Pausing for 1 minute.");
+                cancelAnimationFrame(animationFrameId);
+                
+                // เริ่มตัวจับเวลา 1 นาที
+                endScrollTimer = setTimeout(() => {
+                    console.log("1 minute has passed. Resuming scroll.");
+                    window.scrollTo(0, 0); // เลื่อนกลับไปด้านบนสุด
+                    isAtEnd = false; // รีเซ็ตสถานะ
+                    startAutoScroll(); // เริ่มการเลื่อนหน้าจออัตโนมัติอีกครั้ง
+                }, 60000); // 60000 มิลลิวินาที = 1 นาที
+                return; // ออกจากฟังก์ชันเพื่อป้องกันการเลื่อนต่อไปในขณะที่รอ
             }
 
             // เรียกใช้ฟังก์ชันนี้อีกครั้งในเฟรมถัดไป
@@ -265,6 +279,12 @@
                 isAutoScrollActive = false;
                 if (animationFrameId) {
                     cancelAnimationFrame(animationFrameId);
+                }
+                // ถ้าตัวจับเวลาการหยุดท้ายหน้ากำลังทำงาน ให้ยกเลิก
+                if (endScrollTimer) {
+                    clearTimeout(endScrollTimer);
+                    endScrollTimer = null;
+                    isAtEnd = false; // รีเซ็ตสถานะ
                 }
                 console.log("Auto-scrolling stopped due to user interaction.");
             }
