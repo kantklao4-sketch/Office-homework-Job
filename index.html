@@ -162,4 +162,147 @@
                 </div>
                 <div>
                     <label for="file" class="font-medium text-gray-200">แนบไฟล์งาน</label>
-                    <input type="file" id="file" name="file
+                    <input type="file" id="file" name="file" class="w-full mt-1 text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-700 file:text-teal-200 hover:file:bg-teal-600" required>
+                </div>
+                <div>
+                    <label for="details" class="font-medium text-gray-200">รายละเอียดเพิ่มเติม</label>
+                    <textarea id="details" name="details" rows="4" class="w-full mt-1 input-field"></textarea>
+                </div>
+                <div class="text-center">
+                    <button type="submit" id="submitButton" class="contact-button bg-teal-500 hover:bg-teal-600 w-full sm:w-auto">
+                        <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                        <span>ส่งข้อมูลเพื่อประเมินราคา</span>
+                    </button>
+                </div>
+            </form>
+            <div id="status" class="mt-4 text-lg font-medium" role="status"></div>
+        </section>
+
+        <section id="contact-section" class="text-center mt-16 py-10 rounded-2xl" aria-labelledby="contact-heading">
+            <h2 id="contact-heading" class="text-2xl font-semibold mb-2">สนใจติดต่อสอบถาม</h2>
+            <p class="text-gray-400 mb-8">รับรองผลงานคุณภาพ ตรงเวลา พร้อมให้บริการทุกความต้องการ</p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="tel:0801120371" class="contact-button bg-teal-500 hover:bg-teal-600" aria-label="โทรติดต่อ: 080-1120371">
+                    <i class="fas fa-phone-alt" aria-hidden="true"></i>
+                    <span>080-1120371</span>
+                </a>
+                <a href="https://line.me/ti/p/QKbEM-R-NX" target="_blank" class="contact-button bg-green-500 hover:bg-green-600" aria-label="ติดต่อทาง Line">
+                    <i class="fab fa-line" aria-hidden="true"></i>
+                    <span>Line ID: doopra99</span>
+                </a>
+                <a href="https://www.facebook.com/rab.thakar.ban.rayngan.rab.tha.kickrrm.p" target="_blank" class="contact-button bg-blue-600 hover:bg-blue-700" aria-label="ติดต่อทาง Facebook">
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                    <span>Facebook</span>
+                </a>
+            </div>
+        </section>
+
+    </main>
+    
+    <script>
+        // กำหนดสถานะการเลื่อนหน้าจออัตโนมัติ
+        let isAutoScrollActive = true;
+        let animationFrameId = null;
+        let isAtEnd = false;
+        let endScrollTimer = null;
+
+        // ฟังก์ชันสำหรับเริ่มการเลื่อนหน้าจอแบบอัตโนมัติ
+        function startAutoScroll() {
+            if (!isAutoScrollActive || isAtEnd) {
+                return;
+            }
+            
+            // เลื่อนหน้าจอลง 1 พิกเซลต่อเฟรม
+            window.scrollBy(0, 1);
+            
+            if (window.scrollY >= document.documentElement.scrollHeight - window.innerHeight) {
+                isAtEnd = true;
+                console.log("Reached end of page. Pausing for 1 minute.");
+                cancelAnimationFrame(animationFrameId);
+                
+                endScrollTimer = setTimeout(() => {
+                    console.log("1 minute has passed. Resuming scroll.");
+                    window.scrollTo(0, 0); // เลื่อนกลับไปด้านบนสุด
+                    isAtEnd = false;
+                    isAutoScrollActive = true; // ตั้งค่าให้เริ่มเลื่อนได้อีกครั้ง
+                    startAutoScroll();
+                }, 60000); // 1 นาที
+                return;
+            }
+            animationFrameId = requestAnimationFrame(startAutoScroll);
+        }
+
+        // ฟังก์ชันเพื่อหยุดการเลื่อนหน้าจอแบบชั่วคราว/ถาวร
+        function stopAutoScroll() {
+            if (isAutoScrollActive) {
+                isAutoScrollActive = false;
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                }
+                if (endScrollTimer) {
+                    clearTimeout(endScrollTimer);
+                    endScrollTimer = null;
+                    isAtEnd = false;
+                }
+                console.log("Auto-scrolling stopped due to user interaction.");
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('uploadForm');
+            const statusDiv = document.getElementById('status');
+            const submitButton = document.getElementById('submitButton');
+            const navButtons = document.querySelectorAll('.nav-button');
+
+            // เพิ่ม Event Listener สำหรับการคลิกที่ปุ่มนำทาง (Navigation)
+            navButtons.forEach(button => {
+                button.addEventListener('click', stopAutoScroll);
+            });
+
+            // เพิ่ม Event Listener ให้กับฟอร์ม
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    stopAutoScroll();
+
+                    const file = form.file.files[0];
+
+                    if (!file) {
+                        statusDiv.textContent = 'กรุณาเลือกไฟล์ที่ต้องการอัปโหลด';
+                        statusDiv.className = 'mt-4 text-lg font-medium text-red-600';
+                        return;
+                    }
+
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i><span class="ml-2">กำลังอัปโหลด...</span>';
+                    statusDiv.textContent = '';
+
+                    // จำลองการส่งฟอร์ม (คุณต้องเปลี่ยนส่วนนี้เป็นการส่งข้อมูลจริงไปที่เซิร์ฟเวอร์)
+                    console.log("Simulating form submission with data:", {
+                        name: form.name.value,
+                        contact: form.contact.value,
+                        fileName: file.name,
+                        fileType: file.type,
+                        details: form.details.value
+                    });
+
+                    setTimeout(() => {
+                        statusDiv.textContent = 'ส่งข้อมูลสำเร็จแล้ว! ขอบคุณที่ใช้บริการ';
+                        statusDiv.className = 'mt-4 text-lg font-medium text-green-600';
+                        form.reset();
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<i class="fas fa-paper-plane" aria-hidden="true"></i><span>ส่งข้อมูลเพื่อประเมินราคา</span>';
+                    }, 2000);
+                });
+            }
+
+            // เพิ่ม Event Listener เพื่อหยุดการเลื่อนเมื่อมีการโต้ตอบจากผู้ใช้ (การหมุน Scroll Wheel หรือสัมผัสหน้าจอ)
+            window.addEventListener('wheel', stopAutoScroll);
+            window.addEventListener('touchstart', stopAutoScroll); 
+
+            // เริ่มการเลื่อนหน้าจออัตโนมัติเมื่อโหลดหน้าเสร็จ
+            startAutoScroll();
+        });
+    </script>
+</body>
+</html>
