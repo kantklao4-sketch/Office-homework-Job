@@ -108,7 +108,7 @@
             box-shadow: 0 0 0 2px rgba(72, 187, 120, 0.5);
         }
         
-        #upload-section, #contact-section {
+        #upload-section, #contact-section, #review-board, #academic-section, #technology-section {
             background-color: #283544;
             border: 1px solid #3c4a5c;
         }
@@ -118,13 +118,16 @@
 
     <div class="container mx-auto px-4 py-12 max-w-6xl">
         
+        <!-- Navigation Buttons -->
+        <!-- Each button now has a 'data-target-id' attribute to link it to a section on the page -->
         <div class="flex justify-center items-center space-x-2 md:space-x-4 mb-12">
-            <button class="nav-button font-semibold text-teal-400 ring-2 ring-teal-500">บริการทั้งหมด</button>
-            <button class="nav-button">ด้านวิชาการ</button>
-            <button class="nav-button">ด้านเทคโนโลยี</button>
+            <button class="nav-button font-semibold text-teal-400 ring-2 ring-teal-500" data-target-id="all-services-section">บริการทั้งหมด</button>
+            <button class="nav-button" data-target-id="academic-section">ด้านวิชาการ</button>
+            <button class="nav-button" data-target-id="technology-section">ด้านเทคโนโลยี</button>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <!-- Service Cards Section - All Services -->
+        <div id="all-services-section" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <div class="service-card">
                 <i class="fas fa-graduation-cap service-icon"></i>
                 <h3 class="text-lg font-semibold mb-2">รับทำรายงาน</h3>
@@ -162,6 +165,85 @@
             </div>
         </div>
 
+        <!-- ACADEMIC SERVICES SECTION -->
+        <div id="academic-section" class="text-center mt-16 py-10 rounded-2xl">
+            <h2 class="text-2xl font-semibold mb-2">บริการด้านวิชาการ</h2>
+            <p class="text-gray-400 mb-8">
+                บริการที่เกี่ยวข้องกับงานวิชาการและงานเขียน
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Academic service cards go here -->
+                <div class="service-card">
+                    <i class="fas fa-book-reader service-icon"></i>
+                    <h3 class="text-lg font-semibold mb-2">รับทำรายงาน</h3>
+                    <p class="text-gray-400 text-sm">รายงานทั่วไป, รายงานโครงงานนักศึกษา</p>
+                </div>
+                <div class="service-card">
+                    <i class="fas fa-pen-nib service-icon"></i>
+                    <h3 class="text-lg font-semibold mb-2">งานวิจัยและบทความ</h3>
+                    <p class="text-gray-400 text-sm">รับทำวิจัยและบทความวิชาการ (ป.ตรี)</p>
+                </div>
+                <div class="service-card">
+                    <i class="fas fa-file-alt service-icon"></i>
+                    <h3 class="text-lg font-semibold mb-2">งานเขียนบทความ</h3>
+                    <p class="text-gray-400 text-sm">บทความ, คอนเทนต์, บล็อก ตามความต้องการ</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TECHNOLOGY SERVICES SECTION -->
+        <div id="technology-section" class="text-center mt-16 py-10 rounded-2xl">
+            <h2 class="text-2xl font-semibold mb-2">บริการด้านเทคโนโลยี</h2>
+            <p class="text-gray-400 mb-8">
+                บริการที่เกี่ยวข้องกับการพัฒนาโปรแกรมและจัดการข้อมูล
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Technology service cards go here -->
+                <div class="service-card">
+                    <i class="fas fa-code service-icon"></i>
+                    <h3 class="text-lg font-semibold mb-2">พัฒนา Web & App</h3>
+                    <p class="text-gray-400 text-sm">สร้างเว็บไซต์พื้นฐาน, แอปด้วย App Sheet/Script</p>
+                </div>
+                <div class="service-card">
+                    <i class="fas fa-database service-icon"></i>
+                    <h3 class="text-lg font-semibold mb-2">จัดการฐานข้อมูล</h3>
+                    <p class="text-gray-400 text-sm">สร้างและจัดการฐานข้อมูล, ไฟล์ Sheet</p>
+                </div>
+                <div class="service-card">
+                    <i class="fas fa-laptop-code service-icon"></i>
+                    <h3 class="text-lg font-semibold mb-2">งานโปรแกรมมิ่ง</h3>
+                    <p class="text-gray-400 text-sm">เขียนโปรแกรมและสคริปต์ตามความต้องการ (งานด่วน)</p>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- CONTACT US SECTION (Moved to the top) -->
+        <div id="contact-section" class="text-center mt-16 py-10 rounded-2xl">
+            <h2 class="text-2xl font-semibold mb-2">สนใจติดต่อสอบถาม</h2>
+            <p class="text-gray-400 mb-8">รับรองผลงานคุณภาพ ตรงเวลา พร้อมให้บริการทุกความต้องการ</p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="tel:0801120371" class="contact-button bg-teal-500 hover:bg-teal-600">
+                    <i class="fas fa-phone-alt"></i>
+                    <span>080-1120371</span>
+                </a>
+                <a href="https://line.me/ti/p/QKbEM-R-NX" target="_blank" class="contact-button bg-green-500 hover:bg-green-600">
+                    <i class="fab fa-line"></i>
+                    <span>Line ID: doopra99</span>
+                </a>
+                <a href="https://www.facebook.com/rab.thakar.ban.rayngan.rab.tha.kickrrm.p" target="_blank" class="contact-button bg-blue-600 hover:bg-blue-700">
+                    <i class="fab fa-facebook"></i>
+                    <span>Facebook</span>
+                </a>
+                <!-- Other Services Link -->
+                <a href="#" id="other-services-link" target="_blank" class="contact-button bg-gray-500 hover:bg-gray-600">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>สินค้าและบริการอื่นๆ</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- UPLOAD SECTION (Moved after Contact Us) -->
         <div id="upload-section" class="text-center mt-16 py-10 rounded-2xl">
             <h2 class="text-2xl font-semibold mb-2">แนบไฟล์เพื่อประเมินราคา</h2>
             <p class="text-gray-400 mb-8">กรุณากรอกข้อมูลและแนบไฟล์งานของคุณเพื่อสอบถามราคา</p>
@@ -194,23 +276,53 @@
             <div id="status" class="mt-4 text-lg font-medium"></div>
         </div>
 
-
-        <div class="text-center mt-16 py-10 rounded-2xl">
-            <h2 class="text-2xl font-semibold mb-2">สนใจติดต่อสอบถาม</h2>
-            <p class="text-gray-400 mb-8">รับรองผลงานคุณภาพ ตรงเวลา พร้อมให้บริการทุกความต้องการ</p>
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="tel:0801120371" class="contact-button bg-teal-500 hover:bg-teal-600">
-                    <i class="fas fa-phone-alt"></i>
-                    <span>080-1120371</span>
-                </a>
-                <a href="https://line.me/ti/p/QKbEM-R-NX" target="_blank" class="contact-button bg-green-500 hover:bg-green-600">
-                    <i class="fab fa-line"></i>
-                    <span>Line ID: doopra99</span>
-                </a>
-                <a href="https://www.facebook.com/rab.thakar.ban.rayngan.rab.tha.kickrrm.p" target="_blank" class="contact-button bg-blue-600 hover:bg-blue-700">
-                    <i class="fab fa-facebook"></i>
-                    <span>Facebook</span>
-                </a>
+        <!-- Review and Image Board Section -->
+        <div id="review-board" class="text-center mt-16 py-10 rounded-2xl bg-dark-container border border-[#3c4a5c]">
+            <h2 class="text-2xl font-semibold mb-2">บอร์ดผลงานและรีวิวจากลูกค้า</h2>
+            <p class="text-gray-400 mb-8">แบ่งปันผลงานหรือรีวิวความประทับใจของคุณได้ที่นี่</p>
+            
+            <div class="max-w-4xl mx-auto px-4">
+                <!-- Review Submission Form -->
+                <form id="reviewForm" class="space-y-4 mb-8">
+                    <div>
+                        <input type="text" id="reviewerName" placeholder="ชื่อ (ไม่จำเป็น)" class="w-full p-3 input-field">
+                    </div>
+                    <div>
+                        <textarea id="reviewText" placeholder="เขียนรีวิวของคุณที่นี่..." rows="4" class="w-full p-3 input-field" required></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-left text-gray-400 font-medium mb-1">
+                            แนบรูปภาพ (ไม่เกิน 2MB)
+                        </label>
+                        <input type="file" id="reviewImage" accept="image/*" class="w-full p-2 text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-700 file:text-teal-200 hover:file:bg-teal-600">
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="contact-button bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
+                            <i class="fas fa-comment-dots"></i>
+                            <span>โพสต์รีวิว</span>
+                        </button>
+                    </div>
+                </form>
+        
+                <!-- Review Display Area -->
+                <div id="reviewsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                    <!-- Example Review Card (You can populate this with real data) -->
+                    <div class="bg-dark-card p-4 rounded-xl shadow-md border-2 border-[#3c4a5c]">
+                        <p class="text-sm text-gray-400 mb-2">เขียนโดย: <span class="font-semibold text-gray-200">ลูกค้าท่านหนึ่ง</span></p>
+                        <img src="https://via.placeholder.com/400x300.png?text=Sample+Image" alt="Review Image" class="w-full rounded-lg mb-4">
+                        <p class="text-light-gray">
+                            "งานดีมากครับ ส่งตรงเวลาและแก้ไขงานให้ตามที่ต้องการเลย ประทับใจจริงๆ"
+                        </p>
+                    </div>
+                    
+                    <!-- Another Example -->
+                    <div class="bg-dark-card p-4 rounded-xl shadow-md border-2 border-[#3c4a5c]">
+                        <p class="text-sm text-gray-400 mb-2">เขียนโดย: <span class="font-semibold text-gray-200">คุณอรอนงค์</span></p>
+                        <p class="text-light-gray">
+                            "งานเขียนบทความคุณภาพดีค่ะ ช่วยให้ธุรกิจของเรามีเนื้อหาที่ดีขึ้นเยอะเลย"
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -268,19 +380,74 @@
             }
         }
 
+        // Function to handle review form submission
+        function handleReviewSubmission(e) {
+            e.preventDefault();
+            stopAutoScroll();
+
+            const name = document.getElementById('reviewerName').value || 'ลูกค้าไม่ประสงค์ออกนาม';
+            const reviewText = document.getElementById('reviewText').value;
+            const reviewImage = document.getElementById('reviewImage').files[0];
+
+            const newReview = document.createElement('div');
+            newReview.className = 'bg-dark-card p-4 rounded-xl shadow-md border-2 border-[#3c4a5c] review-card';
+
+            let imageHTML = '';
+            if (reviewImage) {
+                const imageUrl = URL.createObjectURL(reviewImage);
+                imageHTML = `<img src="${imageUrl}" alt="Review Image" class="w-full rounded-lg mb-4">`;
+            }
+
+            newReview.innerHTML = `
+                <p class="text-sm text-gray-400 mb-2">เขียนโดย: <span class="font-semibold text-gray-200">${name}</span></p>
+                ${imageHTML}
+                <p class="text-light-gray">${reviewText}</p>
+            `;
+
+            document.getElementById('reviewsContainer').prepend(newReview);
+            document.getElementById('reviewForm').reset();
+        }
+
         // Handle form submission and auto-scrolling events
         document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('uploadForm');
+            const uploadForm = document.getElementById('uploadForm');
+            const reviewForm = document.getElementById('reviewForm');
             const statusDiv = document.getElementById('status');
             const submitButton = document.getElementById('submitButton');
             const navButtons = document.querySelectorAll('.nav-button');
 
+            // Set the link for "Other Services"
+            const otherServicesLink = document.getElementById('other-services-link');
+            if (otherServicesLink) {
+                // **Replace this URL with your desired link**
+                const newURL = "https://your-website.com/other-products";
+                otherServicesLink.href = newURL;
+            }
+
+            // Add smooth scrolling to the navigation buttons
             navButtons.forEach(button => {
-                button.addEventListener('click', stopAutoScroll);
+                button.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    stopAutoScroll(); // Stop auto-scrolling on click
+
+                    const targetId = this.getAttribute('data-target-id');
+                    const targetElement = document.getElementById(targetId);
+
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                        console.log(`Scrolling to section: ${targetId}`);
+                    }
+                });
             });
 
-            if (form) {
-                form.addEventListener('submit', async function(e) {
+            if (reviewForm) {
+                reviewForm.addEventListener('submit', handleReviewSubmission);
+            }
+
+            if (uploadForm) {
+                uploadForm.addEventListener('submit', async function(e) {
                     e.preventDefault();
                     
                     stopAutoScroll();
@@ -290,7 +457,7 @@
                     submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span class="ml-2">กำลังอัปโหลด...</span>';
                     statusDiv.textContent = '';
 
-                    const formData = new FormData(form);
+                    const formData = new FormData(uploadForm);
                     
                     // We need to get the file name as a string, as we can't upload the file directly to Apps Script in a simple way
                     const fileInput = document.getElementById('file');
@@ -321,7 +488,7 @@
                         // Simulate success UI update
                         statusDiv.textContent = 'ส่งข้อมูลสำเร็จแล้ว! ขอบคุณที่ใช้บริการ';
                         statusDiv.className = 'mt-4 text-lg font-medium text-green-600';
-                        form.reset();
+                        uploadForm.reset();
                     } catch (error) {
                         console.error('Error submitting form:', error);
                         statusDiv.textContent = 'เกิดข้อผิดพลาดในการส่งข้อมูล';
