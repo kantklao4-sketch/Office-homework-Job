@@ -5,27 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>บริการทั้งหมด</title>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fascinate+Inline&family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" xintegrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <style>
         body {
             font-family: 'Kanit', sans-serif;
-            background-color: #1a202c; /* พื้นหลังสีเข้ม */
-            color: #e2e8f0; /* ตัวอักษรสีอ่อนเพื่อความคมชัด */
+            background-color: #1a202c; /* Dark background */
+            color: #e2e8f0; /* Light text for contrast */
             position: relative;
             overflow-x: hidden;
         }
 
-        /* ลายน้ำ 1 พร้อมฟอนต์แฟนตาซี */
+        /* Watermark 1 with fantasy font */
         body::before {
             content: "Office job \A and \A Homework";
-            white-space: pre; /* ใช้ pre-wrap หรือ pre เพื่อให้ขึ้นบรรทัดใหม่จาก \A */
+            white-space: pre;
             position: fixed;
             top: 50%;
             left: 50%;
@@ -33,14 +36,14 @@
             pointer-events: none;
             z-index: -1;
             font-family: 'Fascinate Inline', sans-serif;
-            font-size: 12vw; /* เพิ่มขนาดตัวอักษรให้โดดเด่นขึ้น */
+            font-size: 12vw;
             font-weight: bold;
-            color: rgba(226, 232, 240, 0.1); /* สีเข้มขึ้นเล็กน้อยเพื่อให้มองเห็นได้ชัดเจน */
+            color: rgba(226, 232, 240, 0.1);
             line-height: 1.2;
             text-align: center;
         }
         
-        /* ลายน้ำ 2 สำหรับเอฟเฟกต์แบบเลเยอร์ */
+        /* Watermark 2 for layer effect */
         body::after {
             content: "Digital Services";
             position: fixed;
@@ -48,36 +51,26 @@
             left: 50%;
             transform: translate(-50%, -50%) rotate(45deg);
             pointer-events: none;
-            z-index: -2; /* วางไว้ด้านหลังลายน้ำแรก */
+            z-index: -2;
             font-family: 'Kanit', sans-serif;
             font-size: 8vw;
             font-weight: bold;
-            color: rgba(226, 232, 240, 0.05); /* สีอ่อนกว่าลายน้ำแรก */
+            color: rgba(226, 232, 240, 0.05);
             line-height: 1.2;
             text-align: center;
         }
 
-        /* สีใหม่สำหรับธีมมืดตามภาพ */
-        .bg-dark-container {
-            background-color: #1e2a38;
-        }
-        .bg-dark-card {
+        /* New colors for the dark theme */
+        .bg-dark-container { background-color: #1e2a38; }
+        .bg-dark-card { 
             background-color: #283544;
             border: 1px solid #3c4a5c;
         }
-        .text-light-gray {
-            color: #b0c0d0;
-        }
-        .text-accent-teal {
-            color: #48BB78;
-        }
-        .bg-accent-teal {
-            background-color: #48BB78;
-        }
-        .bg-accent-teal:hover {
-            background-color: #38a169;
-        }
-        .bg-dark-input {
+        .text-light-gray { color: #b0c0d0; }
+        .text-accent-teal { color: #48BB78; }
+        .bg-accent-teal { background-color: #48BB78; }
+        .bg-accent-teal:hover { background-color: #38a169; }
+        .bg-dark-input { 
             background-color: #1e2a38;
             border: 1px solid #3c4a5c;
             color: #e2e8f0;
@@ -96,12 +89,12 @@
             @apply flex items-center justify-center gap-3 px-6 py-3 text-white font-medium rounded-full shadow-lg transition-transform transform hover:scale-105;
         }
         
-        /* สไตล์สำหรับปุ่มเลือกไฟล์ */
+        /* File input button style */
         input[type="file"]::file-selector-button {
             @apply bg-accent-teal text-white font-semibold py-2 px-4 border-0 rounded-lg cursor-pointer hover:bg-accent-teal transition-all;
         }
 
-        /* สไตล์สำหรับช่องกรอกข้อมูลใหม่ */
+        /* New input field style */
         .input-field {
             background-color: #1e2a38;
             border: 1px solid #3c4a5c;
@@ -172,6 +165,7 @@
         <div id="upload-section" class="text-center mt-16 py-10 rounded-2xl">
             <h2 class="text-2xl font-semibold mb-2">แนบไฟล์เพื่อประเมินราคา</h2>
             <p class="text-gray-400 mb-8">กรุณากรอกข้อมูลและแนบไฟล์งานของคุณเพื่อสอบถามราคา</p>
+            <!-- Form points to the Apps Script URL -->
             <form id="uploadForm" class="max-w-lg mx-auto text-left space-y-4">
                 <div>
                     <label for="name" class="font-medium text-gray-200">ชื่อ-สกุล</label>
@@ -181,9 +175,10 @@
                     <label for="contact" class="font-medium text-gray-200">ช่องทางติดต่อ (เบอร์โทร หรือ Line ID)</label>
                     <input type="text" id="contact" name="contact" class="w-full mt-1 p-2 input-field" required>
                 </div>
-                    <div>
+                <div>
+                    <!-- Note: File name is passed as text, not the file itself -->
                     <label for="file" class="font-medium text-gray-200">แนบไฟล์งาน</label>
-                    <input type="file" id="file" name="file" class="w-full mt-1 text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-700 file:text-teal-200 hover:file:bg-teal-600" required>
+                    <input type="file" id="file" name="file" class="w-full mt-1 text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-700 file:text-teal-200 hover:file:bg-teal-600">
                 </div>
                 <div>
                     <label for="details" class="font-medium text-gray-200">รายละเอียดเพิ่มเติม</label>
@@ -222,124 +217,126 @@
     </div>
     
     <script>
-        // กำหนดสถานะการเลื่อนหน้าจออัตโนมัติ
+        // Set the Apps Script Web App URL here
+        // **IMPORTANT: REPLACE THIS URL WITH YOURS**
+        const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzOJBSBJtuM-APUALGQAuI4lU227WN9KsQKmtVR8AgYgj8Opou_cHH_YFdngWmM5xHf9Q/exec";
+
+        // Global variables for auto-scrolling
         let isAutoScrollActive = true;
         let animationFrameId = null;
-        let isAtEnd = false; // สถานะใหม่เพื่อตรวจสอบว่าอยู่ท้ายหน้าและกำลังรอหรือไม่
-        let endScrollTimer = null; // ตัวจับเวลาใหม่สำหรับช่วงที่หยุดรอ
+        let isAtEnd = false;
+        let endScrollTimer = null;
 
-        // ฟังก์ชันสำหรับเริ่มการเลื่อนหน้าจอแบบอัตโนมัติ
+        // Function to start auto-scrolling
         function startAutoScroll() {
-            // หยุดการทำงานถ้าสถานะการเลื่อนถูกปิดใช้งานหรืออยู่ท้ายหน้าและกำลังรอ
             if (!isAutoScrollActive || isAtEnd) {
                 return;
             }
             
-            // เลื่อนหน้าจอลง 1 พิกเซลต่อเฟรม
             window.scrollBy(0, 1);
             
-            // ตรวจสอบว่าถึงท้ายหน้าจอแล้วหรือยัง
             if (window.scrollY >= document.documentElement.scrollHeight - window.innerHeight) {
-                // ถ้าถึงแล้ว ให้ตั้งค่าสถานะว่าอยู่ท้ายหน้าและหยุดการเลื่อน
                 isAtEnd = true;
                 console.log("Reached end of page. Pausing for 1 minute.");
                 cancelAnimationFrame(animationFrameId);
                 
-                // เริ่มตัวจับเวลา 1 นาที
                 endScrollTimer = setTimeout(() => {
                     console.log("1 minute has passed. Resuming scroll.");
-                    window.scrollTo(0, 0); // เลื่อนกลับไปด้านบนสุด
-                    isAtEnd = false; // รีเซ็ตสถานะ
-                    startAutoScroll(); // เริ่มการเลื่อนหน้าจออัตโนมัติอีกครั้ง
-                }, 60000); // 60000 มิลลิวินาที = 1 นาที
-                return; // ออกจากฟังก์ชันเพื่อป้องกันการเลื่อนต่อไปในขณะที่รอ
+                    window.scrollTo(0, 0);
+                    isAtEnd = false;
+                    startAutoScroll();
+                }, 60000); // 60 seconds
+                return;
             }
 
-            // เรียกใช้ฟังก์ชันนี้อีกครั้งในเฟรมถัดไป
             animationFrameId = requestAnimationFrame(startAutoScroll);
         }
 
-        // ฟังก์ชันเพื่อหยุดการเลื่อนหน้าจอแบบชั่วคราว/ถาวร
+        // Function to stop auto-scrolling
         function stopAutoScroll() {
             if (isAutoScrollActive) {
                 isAutoScrollActive = false;
                 if (animationFrameId) {
                     cancelAnimationFrame(animationFrameId);
                 }
-                // ถ้าตัวจับเวลาการหยุดท้ายหน้ากำลังทำงาน ให้ยกเลิก
                 if (endScrollTimer) {
                     clearTimeout(endScrollTimer);
                     endScrollTimer = null;
-                    isAtEnd = false; // รีเซ็ตสถานะ
+                    isAtEnd = false;
                 }
                 console.log("Auto-scrolling stopped due to user interaction.");
             }
         }
 
-        // จัดการการส่งฟอร์ม (โค้ดเดิม)
+        // Handle form submission and auto-scrolling events
         document.addEventListener('DOMContentLoaded', function() {
-            // ดึงองค์ประกอบฟอร์มและสถานะ
             const form = document.getElementById('uploadForm');
             const statusDiv = document.getElementById('status');
             const submitButton = document.getElementById('submitButton');
             const navButtons = document.querySelectorAll('.nav-button');
 
-            // เพิ่ม Event Listener สำหรับการคลิกที่ปุ่มนำทาง (Navigation)
             navButtons.forEach(button => {
                 button.addEventListener('click', stopAutoScroll);
             });
 
-            // เพิ่ม Event Listener ให้กับฟอร์ม
             if (form) {
-                form.addEventListener('submit', function(e) {
+                form.addEventListener('submit', async function(e) {
                     e.preventDefault();
                     
-                    stopAutoScroll(); // หยุดการเลื่อนเมื่อผู้ใช้เริ่มกรอกฟอร์ม
+                    stopAutoScroll();
 
-                    const file = form.file.files[0];
-
-                    // ตรวจสอบว่ามีการเลือกไฟล์แล้วหรือยัง
-                    if (!file) {
-                        statusDiv.textContent = 'กรุณาเลือกไฟล์ที่ต้องการอัปโหลด';
-                        statusDiv.className = 'mt-4 text-lg font-medium text-red-600';
-                        return;
-                    }
-
-                    // แสดงสถานะกำลังโหลดและปิดการใช้งานปุ่ม
+                    // Disable the button and show loading status
                     submitButton.disabled = true;
                     submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span class="ml-2">กำลังอัปโหลด...</span>';
                     statusDiv.textContent = '';
 
-                    // จำลองการส่งฟอร์มที่สำเร็จและการเรียกใช้ API
-                    console.log("Simulating form submission with data:", {
-                        name: form.name.value,
-                        contact: form.contact.value,
-                        fileName: file.name,
-                        fileType: file.type,
-                        details: form.details.value
-                    });
+                    const formData = new FormData(form);
+                    
+                    // We need to get the file name as a string, as we can't upload the file directly to Apps Script in a simple way
+                    const fileInput = document.getElementById('file');
+                    const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : 'ไม่มีไฟล์แนบ';
+                    
+                    // Construct the data payload, including the file name
+                    const data = {
+                        name: formData.get('name'),
+                        contact: formData.get('contact'),
+                        details: formData.get('details'),
+                        file: fileName
+                    };
 
-                    // จำลองการหน่วงเวลา 2 วินาทีสำหรับกระบวนการ "อัปโหลด"
-                    setTimeout(() => {
+                    try {
+                        const response = await fetch(APP_SCRIPT_URL, {
+                            method: 'POST',
+                            mode: 'no-cors', // Apps Script needs no-cors mode
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: new URLSearchParams(data).toString(),
+                        });
+
+                        // Note: The response from Apps Script is always "opaque" due to no-cors mode,
+                        // so we can't read the response text directly.
+                        console.log("Form submission response:", response);
+
+                        // Simulate success UI update
                         statusDiv.textContent = 'ส่งข้อมูลสำเร็จแล้ว! ขอบคุณที่ใช้บริการ';
                         statusDiv.className = 'mt-4 text-lg font-medium text-green-600';
                         form.reset();
+                    } catch (error) {
+                        console.error('Error submitting form:', error);
+                        statusDiv.textContent = 'เกิดข้อผิดพลาดในการส่งข้อมูล';
+                        statusDiv.className = 'mt-4 text-lg font-medium text-red-600';
+                    } finally {
                         submitButton.disabled = false;
                         submitButton.innerHTML = '<i class="fas fa-paper-plane"></i><span>ส่งข้อมูลเพื่อประเมินราคา</span>';
-                    }, 2000);
+                    }
                 });
             }
 
-            // เริ่มการเลื่อนหน้าจออัตโนมัติเมื่อโหลดหน้าเสร็จ
+            // Start and stop auto-scrolling
             startAutoScroll();
-
-            // เพิ่ม Event Listener เพื่อหยุดการเลื่อนเมื่อมีการโต้ตอบจากผู้ใช้ (การหมุน Scroll Wheel)
             window.addEventListener('wheel', stopAutoScroll);
-            
-            // เพิ่ม Event Listener สำหรับการคลิกบนหน้าจอ
             window.addEventListener('click', function(event) {
-                // ตรวจสอบว่า Element ที่ถูกคลิกเป็นส่วนที่ใช้งานหรือไม่ (ปุ่ม, ลิงก์, ช่องกรอกข้อมูล)
-                // ถ้าไม่ใช่ ให้เริ่มการเลื่อนหน้าจออีกครั้ง
                 const isInteractive = event.target.closest('a, button, input, textarea, form');
                 if (!isInteractive && !isAutoScrollActive) {
                     isAutoScrollActive = true;
