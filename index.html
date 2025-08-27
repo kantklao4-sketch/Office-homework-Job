@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>บริการทั้งหมด - Office Job and Homework Digital Services</title>
     
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,15 +23,15 @@
         body {
             font-family: 'Kanit', sans-serif;
             background-color: #1a202c; /* พื้นหลังสีเข้ม */
-            color: #e2e8f0; /* ตัวอักษรสีอ่อน */
+            color: #e2e8f0; /* ตัวอักษรสีอ่อนเพื่อความคมชัด */
             position: relative;
             overflow-x: hidden;
         }
 
-        /* ลายน้ำ 1 */
+        /* ลายน้ำ 1 พร้อมฟอนต์แฟนตาซี */
         body::before {
             content: "Office job \A and \A Homework";
-            white-space: pre;
+            white-space: pre; /* ใช้ pre-wrap หรือ pre เพื่อให้ขึ้นบรรทัดใหม่จาก \A */
             position: fixed;
             top: 50%;
             left: 50%;
@@ -39,14 +39,14 @@
             pointer-events: none;
             z-index: -1;
             font-family: 'Fascinate Inline', sans-serif;
-            font-size: 12vw;
+            font-size: 12vw; /* เพิ่มขนาดตัวอักษรให้โดดเด่นขึ้น */
             font-weight: bold;
-            color: rgba(226, 232, 240, 0.1);
+            color: rgba(226, 232, 240, 0.1); /* สีเข้มขึ้นเล็กน้อยเพื่อให้มองเห็นได้ชัดเจน */
             line-height: 1.2;
             text-align: center;
         }
         
-        /* ลายน้ำ 2 */
+        /* ลายน้ำ 2 สำหรับเอฟเฟกต์แบบเลเยอร์ */
         body::after {
             content: "Digital Services";
             position: fixed;
@@ -54,43 +54,73 @@
             left: 50%;
             transform: translate(-50%, -50%) rotate(45deg);
             pointer-events: none;
-            z-index: -2;
+            z-index: -2; /* วางไว้ด้านหลังลายน้ำแรก */
             font-family: 'Kanit', sans-serif;
             font-size: 8vw;
             font-weight: bold;
-            color: rgba(226, 232, 240, 0.05);
+            color: rgba(226, 232, 240, 0.05); /* สีอ่อนกว่าลายน้ำแรก */
             line-height: 1.2;
             text-align: center;
         }
 
-        /* สีสำหรับธีมมืด */
+        /* สีใหม่สำหรับธีมมืดตามภาพ */
+        .bg-dark-container {
+            background-color: #1e2a38;
+        }
         .bg-dark-card {
             background-color: #283544;
             border: 1px solid #3c4a5c;
         }
-        .text-light-gray { color: #b0c0d0; }
-        .text-accent-teal { color: #48BB78; }
-        .bg-accent-teal { background-color: #48BB78; }
-        .bg-accent-teal:hover { background-color: #38a169; }
+        .text-light-gray {
+            color: #b0c0d0;
+        }
+        .text-accent-teal {
+            color: #48BB78;
+        }
+        .bg-accent-teal {
+            background-color: #48BB78;
+        }
+        .bg-accent-teal:hover {
+            background-color: #38a169;
+        }
+        .bg-dark-input {
+            background-color: #1e2a38;
+            border: 1px solid #3c4a5c;
+            color: #e2e8f0;
+        }
 
-        /* สไตล์ปุ่มและฟอร์ม */
-        .nav-button { @apply px-5 py-2 text-light-gray bg-dark-card rounded-full shadow-sm border border-gray-700 hover:bg-gray-700 hover:text-gray-200 transition-all duration-300; }
-        .service-card { @apply bg-dark-card p-6 rounded-2xl shadow-md border-2 border-[#3c4a5c] hover:shadow-xl hover:-translate-y-1 transition-all duration-300; }
-        .service-icon { @apply w-8 h-8 mb-4 text-accent-teal; }
-        .contact-button { @apply flex items-center justify-center gap-3 px-6 py-3 text-white font-medium rounded-full shadow-lg transition-transform transform hover:scale-105; }
+        .nav-button {
+            @apply px-5 py-2 text-light-gray bg-dark-card rounded-full shadow-sm border border-gray-700 hover:bg-gray-700 hover:text-gray-200 transition-all duration-300;
+        }
+        .service-card {
+            @apply bg-dark-card p-6 rounded-2xl shadow-md border-2 border-[#3c4a5c] hover:shadow-xl hover:-translate-y-1 transition-all duration-300;
+        }
+        .service-icon {
+            @apply w-8 h-8 mb-4 text-accent-teal;
+        }
+        .contact-button {
+            @apply flex items-center justify-center gap-3 px-6 py-3 text-white font-medium rounded-full shadow-lg transition-transform transform hover:scale-105;
+        }
+        
+        /* สไตล์สำหรับปุ่มเลือกไฟล์ */
+        input[type="file"]::file-selector-button {
+            @apply bg-accent-teal text-white font-semibold py-2 px-4 border-0 rounded-lg cursor-pointer hover:bg-accent-teal transition-all;
+        }
+
+        /* สไตล์สำหรับช่องกรอกข้อมูลใหม่ */
         .input-field {
             background-color: #1e2a38;
             border: 1px solid #3c4a5c;
             color: #b0c0d0;
-            border-radius: 0.75rem;
+            border-radius: 0.75rem; /* rounded-xl */
             outline: none;
             transition: border-color 0.3s, box-shadow 0.3s;
-            @apply p-3;
         }
         .input-field:focus {
             border-color: #48BB78;
             box-shadow: 0 0 0 2px rgba(72, 187, 120, 0.5);
         }
+        
         #upload-section, #contact-section {
             background-color: #283544;
             border: 1px solid #3c4a5c;
@@ -99,210 +129,83 @@
 </head>
 <body class="text-gray-200">
 
-    <main class="container mx-auto px-4 py-12 max-w-6xl">
+    <div class="container mx-auto px-4 py-12 max-w-6xl">
         
-        <header class="flex justify-center items-center space-x-2 md:space-x-4 mb-12" role="navigation" aria-label="Main navigation">
+        <div class="flex justify-center items-center space-x-2 md:space-x-4 mb-12">
             <button class="nav-button font-semibold text-teal-400 ring-2 ring-teal-500">บริการทั้งหมด</button>
             <button class="nav-button">ด้านวิชาการ</button>
             <button class="nav-button">ด้านเทคโนโลยี</button>
-        </header>
+        </div>
 
-        <section aria-labelledby="services-heading">
-            <h2 id="services-heading" class="sr-only">บริการของเรา</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                <article class="service-card">
-                    <i class="fas fa-graduation-cap service-icon" aria-hidden="true"></i>
-                    <h3 class="text-lg font-semibold mb-2">รับทำรายงาน</h3>
-                    <p class="text-gray-400 text-sm">รายงานทั่วไป, รายงานโครงงานนักศึกษา, กิจกรรมประจำชุดวิชา (ม.ส.ธ. และอื่น ๆ)</p>
-                </article>
-                
-                <article class="service-card">
-                    <i class="fas fa-flask service-icon" aria-hidden="true"></i>
-                    <h3 class="text-lg font-semibold mb-2">งานวิจัยและโครงงาน</h3>
-                    <p class="text-gray-400 text-sm">งานวิจัยและบทความวิชาการ (ป.ตรี) โครงงาน ปวส. และ ปวช.</p>
-                </article>
-
-                <article class="service-card">
-                    <i class="fas fa-pencil-alt service-icon" aria-hidden="true"></i>
-                    <h3 class="text-lg font-semibold mb-2">งานเขียน</h3>
-                    <p class="text-gray-400 text-sm">บทความ, คอนเทนต์, บล็อก และงานเขียนอื่นๆ ตามความต้องการ</p>
-                </article>
-
-                <article class="service-card">
-                    <i class="fas fa-file-excel service-icon" aria-hidden="true"></i>
-                    <h3 class="text-lg font-semibold mb-2">รับทำไฟล์ Sheet</h3>
-                    <p class="text-gray-400 text-sm">จัดการข้อมูลใน Spreadsheet สร้างสูตรคำนวณที่ซับซ้อน</p>
-                </article>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="service-card">
+                <i class="fas fa-graduation-cap service-icon"></i>
+                <h3 class="text-lg font-semibold mb-2">รับทำรายงาน</h3>
+                <p class="text-gray-400 text-sm">รายงานทั่วไป, รายงานโครงงานนักศึกษา, กิจกรรมประจำชุดวิชา (ม.ส.ธ. และอื่น ๆ)</p>
+            </div>
+            
+            <div class="service-card">
+                <i class="fas fa-flask service-icon"></i>
+                <h3 class="text-lg font-semibold mb-2">งานวิจัยและโครงงาน</h3>
+                <p class="text-gray-400 text-sm">งานวิจัยและบทความวิชาการ (ป.ตรี) โครงงาน ปวส. และ ปวช.</p>
             </div>
 
-            <div class="flex justify-center mt-8">
-                <article class="service-card w-full max-w-md">
-                    <i class="fas fa-code service-icon" aria-hidden="true"></i>
-                    <h3 class="text-lg font-semibold mb-2">พัฒนาเว็บและแอปพลิเคชัน</h3>
-                    <p class="text-gray-400 text-sm">
-                        สร้างเว็บไซต์พื้นฐาน<br>
-                        สร้างแอปด้วย App Sheet, App Script<br>
-                        รับเขียน Web App (งานด่วน)
-                    </p>
-                </article>
+            <div class="service-card">
+                <i class="fas fa-pencil-alt service-icon"></i>
+                <h3 class="text-lg font-semibold mb-2">งานเขียน</h3>
+                <p class="text-gray-400 text-sm">บทความ, คอนเทนต์, บล็อก และงานเขียนอื่นๆ ตามความต้องการ</p>
             </div>
-        </section>
 
-        <section id="upload-section" class="text-center mt-16 py-10 rounded-2xl" aria-labelledby="upload-heading">
-            <h2 id="upload-heading" class="text-2xl font-semibold mb-2">แนบไฟล์เพื่อประเมินราคา</h2>
+            <div class="service-card">
+                <i class="fas fa-file-excel service-icon"></i>
+                <h3 class="text-lg font-semibold mb-2">รับทำไฟล์ Sheet</h3>
+                <p class="text-gray-400 text-sm">จัดการข้อมูลใน Spreadsheet สร้างสูตรคำนวณที่ซับซ้อน</p>
+            </div>
+        </div>
+
+        <div class="flex justify-center mt-8">
+            <div class="service-card w-full max-w-md">
+                <i class="fas fa-code service-icon"></i>
+                <h3 class="text-lg font-semibold mb-2">พัฒนาเว็บและแอปพลิเคชัน</h3>
+                <p class="text-gray-400 text-sm">
+                    สร้างเว็บไซต์พื้นฐาน<br>
+                    สร้างแอปด้วย App Sheet, App Script<br>
+                    รับเขียน Web App (งานด่วน)
+                </p>
+            </div>
+        </div>
+
+        <div id="upload-section" class="text-center mt-16 py-10 rounded-2xl">
+            <h2 class="text-2xl font-semibold mb-2">แนบไฟล์เพื่อประเมินราคา</h2>
             <p class="text-gray-400 mb-8">กรุณากรอกข้อมูลและแนบไฟล์งานของคุณเพื่อสอบถามราคา</p>
             <form id="uploadForm" class="max-w-lg mx-auto text-left space-y-4">
                 <div>
                     <label for="name" class="font-medium text-gray-200">ชื่อ-สกุล</label>
-                    <input type="text" id="name" name="name" class="w-full mt-1 input-field" required>
+                    <input type="text" id="name" name="name" class="w-full mt-1 p-2 input-field" required>
                 </div>
                 <div>
                     <label for="contact" class="font-medium text-gray-200">ช่องทางติดต่อ (เบอร์โทร หรือ Line ID)</label>
-                    <input type="text" id="contact" name="contact" class="w-full mt-1 input-field" required>
+                    <input type="text" id="contact" name="contact" class="w-full mt-1 p-2 input-field" required>
                 </div>
-                <div>
+                    <div>
                     <label for="file" class="font-medium text-gray-200">แนบไฟล์งาน</label>
                     <input type="file" id="file" name="file" class="w-full mt-1 text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-700 file:text-teal-200 hover:file:bg-teal-600" required>
                 </div>
                 <div>
                     <label for="details" class="font-medium text-gray-200">รายละเอียดเพิ่มเติม</label>
-                    <textarea id="details" name="details" rows="4" class="w-full mt-1 input-field"></textarea>
+                    <textarea id="details" name="details" rows="4" class="w-full mt-1 p-2 input-field"></textarea>
                 </div>
                 <div class="text-center">
                     <button type="submit" id="submitButton" class="contact-button bg-teal-500 hover:bg-teal-600 w-full sm:w-auto">
-                        <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                        <i class="fas fa-paper-plane"></i>
                         <span>ส่งข้อมูลเพื่อประเมินราคา</span>
                     </button>
                 </div>
             </form>
-            <div id="status" class="mt-4 text-lg font-medium" role="status"></div>
-        </section>
+            <div id="status" class="mt-4 text-lg font-medium"></div>
+        </div>
 
-        <section id="contact-section" class="text-center mt-16 py-10 rounded-2xl" aria-labelledby="contact-heading">
-            <h2 id="contact-heading" class="text-2xl font-semibold mb-2">สนใจติดต่อสอบถาม</h2>
+
+        <div class="text-center mt-16 py-10 rounded-2xl">
+            <h2 class="text-2xl font-semibold mb-2">สนใจติดต่อสอบถาม</h2>
             <p class="text-gray-400 mb-8">รับรองผลงานคุณภาพ ตรงเวลา พร้อมให้บริการทุกความต้องการ</p>
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="tel:0801120371" class="contact-button bg-teal-500 hover:bg-teal-600" aria-label="โทรติดต่อ: 080-1120371">
-                    <i class="fas fa-phone-alt" aria-hidden="true"></i>
-                    <span>080-1120371</span>
-                </a>
-                <a href="https://line.me/ti/p/QKbEM-R-NX" target="_blank" class="contact-button bg-green-500 hover:bg-green-600" aria-label="ติดต่อทาง Line">
-                    <i class="fab fa-line" aria-hidden="true"></i>
-                    <span>Line ID: doopra99</span>
-                </a>
-                <a href="https://www.facebook.com/rab.thakar.ban.rayngan.rab.tha.kickrrm.p" target="_blank" class="contact-button bg-blue-600 hover:bg-blue-700" aria-label="ติดต่อทาง Facebook">
-                    <i class="fab fa-facebook" aria-hidden="true"></i>
-                    <span>Facebook</span>
-                </a>
-            </div>
-        </section>
-
-    </main>
-    
-    <script>
-        // กำหนดสถานะการเลื่อนหน้าจออัตโนมัติ
-        let isAutoScrollActive = true;
-        let animationFrameId = null;
-        let isAtEnd = false;
-        let endScrollTimer = null;
-
-        // ฟังก์ชันสำหรับเริ่มการเลื่อนหน้าจอแบบอัตโนมัติ
-        function startAutoScroll() {
-            if (!isAutoScrollActive || isAtEnd) {
-                return;
-            }
-            
-            // เลื่อนหน้าจอลง 1 พิกเซลต่อเฟรม
-            window.scrollBy(0, 1);
-            
-            if (window.scrollY >= document.documentElement.scrollHeight - window.innerHeight) {
-                isAtEnd = true;
-                console.log("Reached end of page. Pausing for 1 minute.");
-                cancelAnimationFrame(animationFrameId);
-                
-                endScrollTimer = setTimeout(() => {
-                    console.log("1 minute has passed. Resuming scroll.");
-                    window.scrollTo(0, 0); // เลื่อนกลับไปด้านบนสุด
-                    isAtEnd = false;
-                    isAutoScrollActive = true; // ตั้งค่าให้เริ่มเลื่อนได้อีกครั้ง
-                    startAutoScroll();
-                }, 60000); // 1 นาที
-                return;
-            }
-            animationFrameId = requestAnimationFrame(startAutoScroll);
-        }
-
-        // ฟังก์ชันเพื่อหยุดการเลื่อนหน้าจอแบบชั่วคราว/ถาวร
-        function stopAutoScroll() {
-            if (isAutoScrollActive) {
-                isAutoScrollActive = false;
-                if (animationFrameId) {
-                    cancelAnimationFrame(animationFrameId);
-                }
-                if (endScrollTimer) {
-                    clearTimeout(endScrollTimer);
-                    endScrollTimer = null;
-                    isAtEnd = false;
-                }
-                console.log("Auto-scrolling stopped due to user interaction.");
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('uploadForm');
-            const statusDiv = document.getElementById('status');
-            const submitButton = document.getElementById('submitButton');
-            const navButtons = document.querySelectorAll('.nav-button');
-
-            // เพิ่ม Event Listener สำหรับการคลิกที่ปุ่มนำทาง (Navigation)
-            navButtons.forEach(button => {
-                button.addEventListener('click', stopAutoScroll);
-            });
-
-            // เพิ่ม Event Listener ให้กับฟอร์ม
-            if (form) {
-                form.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    stopAutoScroll();
-
-                    const file = form.file.files[0];
-
-                    if (!file) {
-                        statusDiv.textContent = 'กรุณาเลือกไฟล์ที่ต้องการอัปโหลด';
-                        statusDiv.className = 'mt-4 text-lg font-medium text-red-600';
-                        return;
-                    }
-
-                    submitButton.disabled = true;
-                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i><span class="ml-2">กำลังอัปโหลด...</span>';
-                    statusDiv.textContent = '';
-
-                    // จำลองการส่งฟอร์ม (คุณต้องเปลี่ยนส่วนนี้เป็นการส่งข้อมูลจริงไปที่เซิร์ฟเวอร์)
-                    console.log("Simulating form submission with data:", {
-                        name: form.name.value,
-                        contact: form.contact.value,
-                        fileName: file.name,
-                        fileType: file.type,
-                        details: form.details.value
-                    });
-
-                    setTimeout(() => {
-                        statusDiv.textContent = 'ส่งข้อมูลสำเร็จแล้ว! ขอบคุณที่ใช้บริการ';
-                        statusDiv.className = 'mt-4 text-lg font-medium text-green-600';
-                        form.reset();
-                        submitButton.disabled = false;
-                        submitButton.innerHTML = '<i class="fas fa-paper-plane" aria-hidden="true"></i><span>ส่งข้อมูลเพื่อประเมินราคา</span>';
-                    }, 2000);
-                });
-            }
-
-            // เพิ่ม Event Listener เพื่อหยุดการเลื่อนเมื่อมีการโต้ตอบจากผู้ใช้ (การหมุน Scroll Wheel หรือสัมผัสหน้าจอ)
-            window.addEventListener('wheel', stopAutoScroll);
-            window.addEventListener('touchstart', stopAutoScroll); 
-
-            // เริ่มการเลื่อนหน้าจออัตโนมัติเมื่อโหลดหน้าเสร็จ
-            startAutoScroll();
-        });
-    </script>
-</body>
-</html>
