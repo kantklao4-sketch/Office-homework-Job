@@ -20,10 +20,10 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // Expose Firebase services to the global scope for use in the script below
-        window.firebase = { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, setLogLevel };
+        window.firebase = { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp, setLogLevel };
     </script>
 
     <style>
@@ -149,7 +149,7 @@
             align-self: flex-end;
             border-bottom-right-radius: 0;
         }
-        .ai-message {
+        .dek-fao-ran-message {
             background-color: #3c4a5c;
             color: #e2e8f0;
             align-self: flex-start;
@@ -178,6 +178,44 @@
             box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
         }
         
+        /* Loading spinner for image generation */
+        .image-loading {
+            border-radius: 12px;
+            width: 100%;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #1e2a38;
+            color: #48BB78;
+        }
+        
+        /* Hashtag styles */
+        .hashtag-card {
+            background-color: #1e2a38;
+            padding: 1rem;
+            border-radius: 1rem;
+            border: 1px solid #3c4a5c;
+        }
+        .hashtag-item {
+            display: inline-block;
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px; /* rounded-full */
+            margin: 0.25rem;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .hashtag-item:hover {
+            background-color: #4a5568;
+        }
+        .hashtag-item.selected {
+            background-color: #48BB78;
+            color: white;
+            border: 2px solid white;
+        }
+
     </style>
 </head>
 <body class="text-gray-200">
@@ -193,7 +231,7 @@
         <!-- Each button now has a 'data-target-id' attribute to link it to a section on the page -->
         <div class="flex justify-center items-center space-x-2 md:space-x-4 mb-12 flex-wrap">
             <button class="nav-button font-semibold text-teal-400 ring-2 ring-teal-500 mb-2 md:mb-0" data-target-id="all-services-section">บริการทั้งหมด</button>
-            <button class="nav-button mb-2 md:mb-0" data-target-id="ai-services-section">บริการ AI</button>
+            <button class="nav-button mb-2 md:mb-0" data-target-id="dek-fao-ran-services-section">บริการเด็กเฝ้าร้าน</button>
             <button class="nav-button mb-2 md:mb-0" data-target-id="academic-section">ด้านวิชาการ</button>
             <button class="nav-button mb-2 md:mb-0" data-target-id="technology-section">ด้านเทคโนโลยี</button>
         </div>
@@ -237,18 +275,18 @@
             </div>
         </div>
 
-        <!-- AI SERVICES SECTION -->
-        <div id="ai-services-section" class="text-center mt-16 py-10 rounded-2xl bg-dark-container border border-[#3c4a5c]">
-            <h2 class="text-2xl font-semibold mb-2">บริการ AI อัจฉริยะ</h2>
+        <!-- เด็กเฝ้าร้าน SERVICES SECTION -->
+        <div id="dek-fao-ran-services-section" class="text-center mt-16 py-10 rounded-2xl bg-dark-container border border-[#3c4a5c]">
+            <h2 class="text-2xl font-semibold mb-2">บริการเด็กเฝ้าร้าน อัจฉริยะ</h2>
             <p class="text-gray-400 mb-8">
-                ผู้ช่วย AI ที่พร้อมให้บริการและตอบคำถามของคุณตลอด 24 ชั่วโมง
+                ผู้ช่วยเด็กเฝ้าร้าน ที่พร้อมให้บริการและตอบคำถามของคุณตลอด 24 ชั่วโมง
             </p>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
                 
-                <!-- AI Chatbot Section -->
+                <!-- เด็กเฝ้าร้าน Chatbot Section -->
                 <div class="service-card flex flex-col items-center">
                     <i class="fas fa-robot service-icon"></i>
-                    <h3 class="text-lg font-semibold mb-4">ผู้ช่วย AI ประจำร้าน</h3>
+                    <h3 class="text-lg font-semibold mb-4">ผู้ช่วยเด็กเฝ้าร้าน ประจำร้าน</h3>
                     <div id="chat-box" class="chat-container w-full h-80 bg-dark-input rounded-xl mb-4 text-left">
                         <!-- Chat messages will be appended here -->
                     </div>
@@ -263,7 +301,7 @@
                 <!-- Price Calculator Section -->
                 <div class="service-card flex flex-col items-center">
                     <i class="fas fa-calculator service-icon"></i>
-                    <h3 class="text-lg font-semibold mb-4">AI คำนวณราคาคร่าวๆ</h3>
+                    <h3 class="text-lg font-semibold mb-4">เด็กเฝ้าร้าน คำนวณราคาคร่าวๆ</h3>
                     <form id="priceForm" class="w-full space-y-4 text-left">
                         <div>
                             <label for="projectType" class="text-sm">ประเภทงาน:</label>
@@ -286,7 +324,7 @@
                 <!-- Image Generator Section -->
                 <div class="service-card flex flex-col items-center">
                     <i class="fas fa-paint-brush service-icon"></i>
-                    <h3 class="text-lg font-semibold mb-4">AI สร้างภาพจากข้อความ</h3>
+                    <h3 class="text-lg font-semibold mb-4">เด็กเฝ้าร้าน สร้างภาพจากข้อความ</h3>
                     <form id="imageForm" class="w-full space-y-4 text-left">
                         <div>
                             <label for="imagePrompt" class="text-sm">คำอธิบายภาพ:</label>
@@ -411,7 +449,7 @@
                     </button>
                 </div>
             </form>
-            <div id="status" class="mt-4 text-lg font-medium"></div>
+            <div id="uploadStatus" class="mt-4 text-lg font-medium text-center"></div>
         </div>
 
         <!-- Review and Image Board Section -->
@@ -447,6 +485,32 @@
                     <!-- Reviews will be dynamically inserted here by the script -->
                 </div>
             </div>
+            <div id="reviewStatus" class="mt-4 text-lg font-medium text-center"></div>
+        </div>
+        
+        <!-- NEW HASHTAGS SECTION -->
+        <div id="hashtag-section" class="text-center mt-16 py-10 rounded-2xl bg-dark-container border border-[#3c4a5c]">
+            <h2 class="text-2xl font-semibold mb-2">แฮชแท็กที่เกี่ยวข้อง</h2>
+            <p class="text-gray-400 mb-8">คลิกที่แฮชแท็กเพื่อเลือก จากนั้นกดปุ่มคัดลอกด้านล่างเพื่อนำไปใช้งาน</p>
+            
+            <!-- Loading Spinner -->
+            <div id="hashtag-loading" class="text-light-gray">
+                <i class="fas fa-spinner fa-spin fa-2x"></i>
+                <p class="mt-2">กำลังจัดหมวดหมู่แฮชแท็ก...</p>
+            </div>
+
+            <!-- Hashtag Container -->
+            <div id="hashtag-container" class="space-y-6">
+                <!-- Categorized hashtags will be inserted here by JavaScript -->
+            </div>
+
+            <!-- Copy Button -->
+            <button id="copyHashtagsBtn" class="contact-button bg-purple-600 hover:bg-purple-700 mt-8 hidden">
+                <i class="fas fa-copy"></i>
+                <span>คัดลอกแฮชแท็กที่เลือก</span>
+            </button>
+
+            <div id="copyStatus" class="mt-4 text-sm font-medium text-center text-green-400"></div>
         </div>
 
     </div>
@@ -473,53 +537,12 @@
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
         const API_KEY = ""; // Leave this empty, it will be provided in the runtime
 
-        // Function to start auto-scrolling
-        function startAutoScroll() {
-            if (!isAutoScrollActive || isAtEnd) {
-                return;
-            }
-            
-            window.scrollBy(0, 1);
-            
-            if (window.scrollY >= document.documentElement.scrollHeight - window.innerHeight) {
-                isAtEnd = true;
-                console.log("Reached end of page. Pausing for 1 minute.");
-                cancelAnimationFrame(animationFrameId);
-                
-                endScrollTimer = setTimeout(() => {
-                    console.log("1 minute has passed. Resuming scroll.");
-                    window.scrollTo(0, 0);
-                    isAtEnd = false;
-                    startAutoScroll();
-                }, 60000); // 60 seconds
-                return;
-            }
-
-            animationFrameId = requestAnimationFrame(startAutoScroll);
-        }
-
-        // Function to stop auto-scrolling
-        function stopAutoScroll() {
-            if (isAutoScrollActive) {
-                isAutoScrollActive = false;
-                if (animationFrameId) {
-                    cancelAnimationFrame(animationFrameId);
-                }
-                if (endScrollTimer) {
-                    clearTimeout(endScrollTimer);
-                    endScrollTimer = null;
-                    isAtEnd = false;
-                }
-                console.log("Auto-scrolling stopped due to user interaction.");
-            }
-        }
-        
         // Function to display a status message
-        function showStatus(message, isSuccess = true) {
-            const statusDiv = document.getElementById('reviewStatus');
+        function showStatus(elementId, message, isSuccess = true) {
+            const statusDiv = document.getElementById(elementId);
             if (statusDiv) {
                 statusDiv.textContent = message;
-                statusDiv.className = `mt-4 text-lg font-medium ${isSuccess ? 'text-green-600' : 'text-red-600'}`;
+                statusDiv.className = `mt-4 text-lg font-medium text-center ${isSuccess ? 'text-green-600' : 'text-red-600'}`;
             }
         }
 
@@ -548,7 +571,6 @@
         // Function to handle review form submission
         async function handleReviewSubmission(e) {
             e.preventDefault();
-            stopAutoScroll();
 
             const submitBtn = document.getElementById('submitReviewBtn');
             const reviewForm = document.getElementById('reviewForm');
@@ -557,7 +579,7 @@
             const reviewImage = document.getElementById('reviewImage').files[0];
 
             if (!reviewText) {
-                showStatus('กรุณาเขียนรีวิวก่อนส่ง', false);
+                showStatus('reviewStatus', 'กรุณาเขียนรีวิวก่อนส่ง', false);
                 return;
             }
 
@@ -576,8 +598,6 @@
             if (reviewImage) {
                 console.log("Image attached, but not uploaded to the server in this version.");
                 console.log("Image name:", reviewImage.name);
-                // For a real-world app, use Firebase Storage to upload the image here
-                // and save the URL to the Firestore document.
                 reviewData.imageUrl = 'https://placehold.co/400x300/1e2a38/b0c0d0?text=Image+Not+Uploaded';
             } else {
                 reviewData.imageUrl = 'https://placehold.co/400x300/1e2a38/b0c0d0?text=No+Image';
@@ -586,11 +606,11 @@
             try {
                 const reviewsCollectionRef = firebase.collection(db, `artifacts/${appId}/public/data/reviews`);
                 await firebase.addDoc(reviewsCollectionRef, reviewData);
-                showStatus('โพสต์รีวิวสำเร็จแล้ว! ขอบคุณครับ', true);
+                showStatus('reviewStatus', 'โพสต์รีวิวสำเร็จแล้ว! ขอบคุณครับ', true);
                 reviewForm.reset();
             } catch (error) {
                 console.error('Error posting review:', error);
-                showStatus('เกิดข้อผิดพลาดในการโพสต์รีวิว', false);
+                showStatus('reviewStatus', 'เกิดข้อผิดพลาดในการโพสต์รีวิว', false);
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-comment-dots"></i><span>โพสต์รีวิว</span>';
@@ -603,327 +623,398 @@
             reviewsContainer.innerHTML = ''; // Clear existing reviews
             
             const reviewsCollectionRef = firebase.collection(db, `artifacts/${appId}/public/data/reviews`);
-            const q = firebase.query(reviewsCollectionRef, firebase.orderBy('timestamp', 'desc'));
+            const q = firebase.query(reviewsCollectionRef);
             
             firebase.onSnapshot(q, (snapshot) => {
-                reviewsContainer.innerHTML = ''; // Clear to prevent duplicates
+                const reviews = [];
                 snapshot.forEach((doc) => {
-                    const review = doc.data();
-                    renderReviewCard(review);
+                    reviews.push(doc.data());
                 });
-                // After fetching, restart auto-scroll if no user interaction
-                if (!isAutoScrollActive) {
-                    isAutoScrollActive = true;
-                    startAutoScroll();
-                }
+
+                // Sort reviews by timestamp in descending order in JavaScript
+                reviews.sort((a, b) => {
+                    if (a.timestamp && b.timestamp) {
+                        return b.timestamp.toMillis() - a.timestamp.toMillis();
+                    }
+                    return 0;
+                });
+
+                reviewsContainer.innerHTML = ''; // Clear to prevent duplicates
+                reviews.forEach(review => renderReviewCard(review));
             }, (error) => {
                 console.error("Error fetching reviews:", error);
             });
         }
         
-        // --- AI Function Implementations ---
+        // --- เด็กเฝ้าร้าน Function Implementations ---
 
-        // AI Chatbot Function
-        async function handleChatSubmission(e) {
-            e.preventDefault();
-            const chatInput = document.getElementById('chatInput');
+        // เด็กเฝ้าร้าน Chatbot Function
+        async function sendChatPrompt(prompt) {
             const chatBox = document.getElementById('chat-box');
+            const chatInput = document.getElementById('chatInput');
             const chatSendBtn = document.getElementById('chatSendBtn');
-            const userMessage = chatInput.value.trim();
 
-            if (!userMessage) return;
+            // Add user message to chatbox
+            const userMessageDiv = document.createElement('div');
+            userMessageDiv.className = 'message-bubble user-message';
+            userMessageDiv.textContent = prompt;
+            chatBox.prepend(userMessageDiv);
 
-            // Display user's message
-            const userMsgElement = document.createElement('div');
-            userMsgElement.className = 'message-bubble user-message';
-            userMsgElement.textContent = userMessage;
-            chatBox.prepend(userMsgElement);
+            // Add loading indicator
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message-bubble dek-fao-ran-message';
+            loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i><span>เด็กเฝ้าร้าน กำลังตอบ...</span>';
+            chatBox.prepend(loadingDiv);
 
-            chatInput.value = '';
+            chatInput.disabled = true;
             chatSendBtn.disabled = true;
-            chatSendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
             try {
-                const systemPrompt = "คุณคือ AI ผู้ช่วยสำหรับร้าน Kant Klao Shop ที่ให้บริการงานเขียน รายงาน และเว็บไซต์ คุณสามารถให้ข้อมูลเกี่ยวกับบริการและราคางานโดยประมาณได้ แต่ต้องเน้นย้ำว่าราคาจริงอาจแตกต่างไปตามรายละเอียดงานและต้องติดต่อร้านค้าเพื่อยืนยันเสมอ";
-                const userQuery = userMessage;
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
-                
+                const chatHistory = [{
+                    role: "user",
+                    parts: [{
+                        text: prompt
+                    }]
+                }];
                 const payload = {
-                    contents: [{ parts: [{ text: userQuery }] }],
-                    tools: [{ "google_search": {} }],
-                    systemInstruction: {
-                        parts: [{ text: systemPrompt }]
-                    },
+                    contents: chatHistory
                 };
 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
                 const response = await fetch(apiUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify(payload)
                 });
-                
                 const result = await response.json();
-                const aiMessage = result?.candidates?.[0]?.content?.parts?.[0]?.text || "ขออภัยครับ ไม่สามารถให้ข้อมูลได้ในขณะนี้";
-
-                // Display AI's message
-                const aiMsgElement = document.createElement('div');
-                aiMsgElement.className = 'message-bubble ai-message';
-                aiMsgElement.textContent = aiMessage;
-                chatBox.prepend(aiMsgElement);
-
+                const aiResponse = result.candidates[0].content.parts[0].text;
+                
+                chatBox.removeChild(loadingDiv);
+                
+                const aiMessageDiv = document.createElement('div');
+                aiMessageDiv.className = 'message-bubble dek-fao-ran-message';
+                aiMessageDiv.textContent = aiResponse;
+                chatBox.prepend(aiMessageDiv);
+                
             } catch (error) {
-                console.error('Error fetching AI response:', error);
-                const errorMsg = document.createElement('div');
-                errorMsg.className = 'message-bubble ai-message';
-                errorMsg.textContent = 'ขออภัยครับ เกิดข้อผิดพลาดในการเชื่อมต่อ';
-                chatBox.prepend(errorMsg);
+                console.error("Error with เด็กเฝ้าร้าน chat:", error);
+                chatBox.removeChild(loadingDiv);
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'message-bubble dek-fao-ran-message';
+                errorDiv.textContent = 'ขออภัย เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง';
+                chatBox.prepend(errorDiv);
             } finally {
+                chatInput.disabled = false;
                 chatSendBtn.disabled = false;
-                chatSendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                chatInput.value = '';
+                chatInput.focus();
             }
         }
-
-        // Price Calculator Function
-        async function handlePriceCalculation(e) {
-            e.preventDefault();
-            const projectType = document.getElementById('projectType').value;
-            const projectDetails = document.getElementById('projectDetails').value;
+        
+        // เด็กเฝ้าร้าน Price Calculator Function
+        async function calculatePrice(type, details) {
+            const priceResultDiv = document.getElementById('priceResult');
             const priceBtn = document.getElementById('priceBtn');
-            const priceResult = document.getElementById('priceResult');
-
+            priceResultDiv.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i><span>เด็กเฝ้าร้าน กำลังประเมินราคา...</span>';
             priceBtn.disabled = true;
-            priceBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span class="ml-2">กำลังประเมิน...</span>';
-            priceResult.innerHTML = '';
 
             try {
-                const prompt = `ประเมินราคาคร่าวๆ สำหรับงานประเภท "${projectType}" โดยมีรายละเอียดดังนี้: "${projectDetails}" ให้ตอบกลับเป็น JSON object ที่มี properties ดังนี้: "minPrice" (ราคาต่ำสุดเป็นตัวเลข), "maxPrice" (ราคาสูงสุดเป็นตัวเลข), และ "disclaimer" (ข้อความเตือนว่าราคาเป็นแค่การประมาณการและอาจเปลี่ยนแปลงได้)`;
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
-
+                const prompt = `จากข้อมูลงาน: ประเภทงานคือ "${type}", รายละเอียดคือ "${details}" กรุณาประเมินราคาคร่าวๆ เป็นช่วงราคาในสกุลเงินบาท (THB) และบอกเหตุผลประกอบสั้นๆ โดยให้ตอบเป็นข้อความที่เข้าใจง่าย`;
                 const payload = {
-                    contents: [{ parts: [{ text: prompt }] }],
+                    contents: [{
+                        parts: [{
+                            text: prompt
+                        }]
+                    }]
+                };
+
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                const aiResponse = result.candidates[0].content.parts[0].text;
+                priceResultDiv.innerHTML = aiResponse;
+            } catch (error) {
+                console.error("Error with เด็กเฝ้าร้าน price calculation:", error);
+                priceResultDiv.innerHTML = 'ไม่สามารถประเมินราคาได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง หรือติดต่อทางร้านโดยตรง';
+            } finally {
+                priceBtn.disabled = false;
+            }
+        }
+        
+        // เด็กเฝ้าร้าน Image Generator Function
+        async function generateImage(prompt) {
+            const imageResultDiv = document.getElementById('imageResult');
+            const generatedImage = document.getElementById('generatedImage');
+            const imageBtn = document.getElementById('imageBtn');
+
+            imageResultDiv.innerHTML = '<div class="image-loading"><i class="fas fa-spinner fa-spin text-4xl"></i><p class="mt-4">เด็กเฝ้าร้าน กำลังสร้างภาพ...</p></div>';
+            imageBtn.disabled = true;
+
+            try {
+                const payload = {
+                    instances: {
+                        prompt: prompt
+                    },
+                    parameters: {
+                        "sampleCount": 1
+                    }
+                };
+
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${API_KEY}`;
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                const base64Data = result?.predictions?.[0]?.bytesBase64Encoded;
+
+                if (base64Data) {
+                    const imageUrl = `data:image/png;base64,${base64Data}`;
+                    generatedImage.src = imageUrl;
+                    imageResultDiv.innerHTML = '';
+                    imageResultDiv.appendChild(generatedImage);
+                } else {
+                    imageResultDiv.innerHTML = '<div class="image-loading">ไม่สามารถสร้างภาพได้ โปรดลองอีกครั้ง</div>';
+                    console.error("Image generation failed:", result);
+                }
+
+            } catch (error) {
+                console.error("Error with เด็กเฝ้าร้าน image generation:", error);
+                imageResultDiv.innerHTML = '<div class="image-loading">เกิดข้อผิดพลาดในการสร้างภาพ</div>';
+            } finally {
+                imageBtn.disabled = false;
+            }
+        }
+        
+        // Hashtag Generator
+        async function generateHashtags() {
+            const hashtagLoadingDiv = document.getElementById('hashtag-loading');
+            const hashtagContainerDiv = document.getElementById('hashtag-container');
+            const copyButton = document.getElementById('copyHashtagsBtn');
+
+            hashtagLoadingDiv.style.display = 'block';
+            hashtagContainerDiv.innerHTML = '';
+            copyButton.style.display = 'none';
+
+            const userPrompt = "Generate 10 Thai hashtags for a digital service business offering academic, creative, and technical services. Categorize them into relevant groups like 'งานวิชาการ', 'งานเขียน', 'งานเทคโนโลยี', and 'บริการทั่วไป'. Respond in JSON format only with the schema: { 'categories': [{ 'title': string, 'hashtags': [string] }] }";
+            
+            try {
+                const payload = {
+                    contents: [{
+                        parts: [{
+                            text: userPrompt
+                        }]
+                    }],
                     generationConfig: {
                         responseMimeType: "application/json",
                         responseSchema: {
                             type: "OBJECT",
                             properties: {
-                                "minPrice": { "type": "NUMBER" },
-                                "maxPrice": { "type": "NUMBER" },
-                                "disclaimer": { "type": "STRING" }
-                            },
+                                "categories": {
+                                    type: "ARRAY",
+                                    items: {
+                                        type: "OBJECT",
+                                        properties: {
+                                            "title": { "type": "STRING" },
+                                            "hashtags": { "type": "ARRAY", "items": { "type": "STRING" } }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 };
                 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                
                 const result = await response.json();
                 const jsonText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (!jsonText) {
-                    throw new Error("Invalid JSON response from API.");
-                }
-                const priceData = JSON.parse(jsonText);
-
-                priceResult.innerHTML = `
-                    <p class="text-xl font-bold text-accent-teal mb-2">
-                        ราคาประเมินโดยประมาณ:
-                        <br>${priceData.minPrice.toLocaleString()} - ${priceData.maxPrice.toLocaleString()} บาท
-                    </p>
-                    <p class="text-xs text-gray-500 mt-2">${priceData.disclaimer}</p>
-                `;
-
-            } catch (error) {
-                console.error('Error calculating price:', error);
-                priceResult.innerHTML = '<p class="text-red-500">ขออภัยครับ เกิดข้อผิดพลาดในการประเมินราคา กรุณาลองใหม่อีกครั้ง</p>';
-            } finally {
-                priceBtn.disabled = false;
-                priceBtn.innerHTML = '<i class="fas fa-coins"></i><span>ประเมินราคา</span>';
-            }
-        }
-
-        // Image Generator Function
-        async function handleImageGeneration(e) {
-            e.preventDefault();
-            const imagePrompt = document.getElementById('imagePrompt').value;
-            const imageBtn = document.getElementById('imageBtn');
-            const generatedImage = document.getElementById('generatedImage');
-
-            imageBtn.disabled = true;
-            imageBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span class="ml-2">กำลังสร้างภาพ...</span>';
-            generatedImage.src = 'https://placehold.co/400x300/283544/b0c0d0?text=กำลังสร้างภาพ';
-
-            try {
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${API_KEY}`;
-                const payload = { instances: { prompt: imagePrompt }, parameters: { "sampleCount": 1} };
+                const data = JSON.parse(jsonText);
                 
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const result = await response.json();
-                const base64Data = result?.predictions?.[0]?.bytesBase64Encoded;
-                if (!base64Data) {
-                    throw new Error("No image data received.");
+                if (data && data.categories) {
+                    data.categories.forEach(category => {
+                        const card = document.createElement('div');
+                        card.className = 'hashtag-card text-left';
+                        card.innerHTML = `<h4 class="font-semibold text-lg mb-2 text-white">${category.title}</h4>`;
+                        
+                        const tagsDiv = document.createElement('div');
+                        tagsDiv.className = 'flex flex-wrap gap-2';
+                        category.hashtags.forEach(tag => {
+                            const hashtagSpan = document.createElement('span');
+                            hashtagSpan.className = 'hashtag-item';
+                            hashtagSpan.textContent = tag;
+                            hashtagSpan.addEventListener('click', () => hashtagSpan.classList.toggle('selected'));
+                            tagsDiv.appendChild(hashtagSpan);
+                        });
+                        
+                        card.appendChild(tagsDiv);
+                        hashtagContainerDiv.appendChild(card);
+                    });
+                    copyButton.style.display = 'block';
                 }
-                const imageUrl = `data:image/png;base64,${base64Data}`;
-                generatedImage.src = imageUrl;
-
             } catch (error) {
-                console.error('Error generating image:', error);
-                generatedImage.src = 'https://placehold.co/400x300/283544/b0c0d0?text=สร้างภาพไม่สำเร็จ';
+                console.error("Error generating hashtags:", error);
+                hashtagContainerDiv.innerHTML = '<p class="text-red-600">ไม่สามารถสร้างแฮชแท็กได้ กรุณาลองใหม่อีกครั้ง</p>';
             } finally {
-                imageBtn.disabled = false;
-                imageBtn.innerHTML = '<i class="fas fa-palette"></i><span>สร้างภาพ</span>';
+                hashtagLoadingDiv.style.display = 'none';
             }
         }
         
-        // Initialize Firebase and set up event listeners
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Add a status message area for the review form
-            const reviewForm = document.getElementById('reviewForm');
-            const statusDiv = document.createElement('div');
-            statusDiv.id = 'reviewStatus';
-            statusDiv.className = 'mt-4 text-center text-lg font-medium';
-            reviewForm.parentNode.insertBefore(statusDiv, reviewForm.nextSibling);
-            
-            // Firebase setup
-            if (Object.keys(firebaseConfig).length > 0) {
+        // --- Event Listeners ---
+        
+        // Initialize Firebase on window load and set up listeners
+        window.onload = async () => {
+            if (typeof firebaseConfig.apiKey !== 'undefined') {
                 try {
                     firebase.setLogLevel('debug');
                     app = firebase.initializeApp(firebaseConfig);
                     auth = firebase.getAuth(app);
                     db = firebase.getFirestore(app);
-                    
-                    if (typeof __initial_auth_token !== 'undefined') {
-                        await firebase.signInWithCustomToken(auth, __initial_auth_token);
+
+                    const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                    if (token) {
+                        await firebase.signInWithCustomToken(auth, token);
                     } else {
                         await firebase.signInAnonymously(auth);
                     }
-                    
-                    auth.onAuthStateChanged(user => {
+
+                    firebase.onAuthStateChanged(auth, (user) => {
                         if (user) {
                             userId = user.uid;
-                            console.log("Firebase initialized. User ID:", userId);
+                            console.log("Firebase Auth State Changed. User ID:", userId);
                             listenForReviews();
                         } else {
-                            console.log("No user signed in.");
+                            console.log("User signed out or not authenticated.");
+                            // Handle signed out state if needed
                         }
                     });
+
                 } catch (error) {
-                    console.error("Failed to initialize Firebase:", error);
+                    console.error("Error initializing Firebase:", error);
                 }
             } else {
-                console.error("Firebase config is missing. Review board will not be functional.");
+                console.error("Firebase config is missing. Services will not work.");
             }
+        };
 
-            const uploadForm = document.getElementById('uploadForm');
-            const reviewFormElement = document.getElementById('reviewForm');
-            const chatFormElement = document.getElementById('chatForm');
-            const priceFormElement = document.getElementById('priceForm');
-            const imageFormElement = document.getElementById('imageForm');
-
-            const statusUploadDiv = document.getElementById('status');
-            const submitButton = document.getElementById('submitButton');
-            const navButtons = document.querySelectorAll('.nav-button');
-
-            // Add event listeners for new AI forms
-            if (chatFormElement) {
-                chatFormElement.addEventListener('submit', handleChatSubmission);
-            }
-            if (priceFormElement) {
-                priceFormElement.addEventListener('submit', handlePriceCalculation);
-            }
-            if (imageFormElement) {
-                imageFormElement.addEventListener('submit', handleImageGeneration);
-            }
-
-            if (reviewFormElement) {
-                reviewFormElement.addEventListener('submit', handleReviewSubmission);
-            }
-
-            if (uploadForm) {
-                uploadForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    
-                    stopAutoScroll();
-
-                    submitButton.disabled = true;
-                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span class="ml-2">กำลังอัปโหลด...</span>';
-                    statusUploadDiv.textContent = '';
-
-                    const formData = new FormData(uploadForm);
-                    
-                    const fileInput = document.getElementById('file');
-                    const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : 'ไม่มีไฟล์แนบ';
-                    
-                    const data = {
-                        name: formData.get('name'),
-                        contact: formData.get('contact'),
-                        details: formData.get('details'),
-                        file: fileName
-                    };
-
-                    try {
-                        const response = await fetch(APP_SCRIPT_URL, {
-                            method: 'POST',
-                            mode: 'no-cors',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            },
-                            body: new URLSearchParams(data).toString(),
-                        });
-
-                        console.log("Form submission response:", response);
-
-                        statusUploadDiv.textContent = 'ส่งข้อมูลสำเร็จแล้ว! ขอบคุณที่ใช้บริการ';
-                        statusUploadDiv.className = 'mt-4 text-lg font-medium text-green-600';
-                        uploadForm.reset();
-                    } catch (error) {
-                        console.error('Error submitting form:', error);
-                        statusUploadDiv.textContent = 'เกิดข้อผิดพลาดในการส่งข้อมูล';
-                        statusUploadDiv.className = 'mt-4 text-lg font-medium text-red-600';
-                    } finally {
-                        submitButton.disabled = false;
-                        submitButton.innerHTML = '<i class="fas fa-paper-plane"></i><span>ส่งข้อมูลเพื่อประเมินราคา</span>';
-                    }
-                });
-            }
-
-            // Add smooth scrolling to the navigation buttons
-            navButtons.forEach(button => {
-                button.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    stopAutoScroll(); // Stop auto-scrolling on click
-
-                    const targetId = this.getAttribute('data-target-id');
-                    const targetElement = document.getElementById(targetId);
-
-                    if (targetElement) {
-                        targetElement.scrollIntoView({
-                            behavior: 'smooth'
-                        });
-                        console.log(`Scrolling to section: ${targetId}`);
-                    }
-                });
-            });
-
-
-            // Start and stop auto-scrolling
-            startAutoScroll();
-            window.addEventListener('wheel', stopAutoScroll);
-            window.addEventListener('click', function(event) {
-                const isInteractive = event.target.closest('a, button, input, textarea, form');
-                if (!isInteractive && !isAutoScrollActive) {
-                    isAutoScrollActive = true;
-                    startAutoScroll();
-                    console.log("Auto-scrolling resumed after a non-interactive click.");
+        // Navigation scrolling
+        document.querySelectorAll('.nav-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const targetId = e.currentTarget.getAttribute('data-target-id');
+                const targetSection = document.getElementById(targetId);
+                if (targetSection) {
+                    targetSection.scrollIntoView({ behavior: 'smooth' });
                 }
             });
+        });
+
+        // Chatbot Form Submission
+        document.getElementById('chatForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('chatInput');
+            const prompt = input.value.trim();
+            if (prompt) {
+                sendChatPrompt(prompt);
+            }
+        });
+
+        // Price Form Submission
+        document.getElementById('priceForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const projectType = document.getElementById('projectType').value.trim();
+            const projectDetails = document.getElementById('projectDetails').value.trim();
+            if (projectType && projectDetails) {
+                calculatePrice(projectType, projectDetails);
+            }
+        });
+
+        // Image Form Submission
+        document.getElementById('imageForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const imagePrompt = document.getElementById('imagePrompt').value.trim();
+            if (imagePrompt) {
+                generateImage(imagePrompt);
+            }
+        });
+
+        // Upload Form Submission (Apps Script)
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const statusDiv = document.getElementById('uploadStatus');
+            const submitButton = document.getElementById('submitButton');
+
+            statusDiv.textContent = 'กำลังส่งข้อมูล...';
+            statusDiv.className = 'mt-4 text-lg font-medium text-center text-yellow-500';
+            submitButton.disabled = true;
+
+            try {
+                const response = await fetch(APP_SCRIPT_URL, {
+                    method: 'POST',
+                    body: formData,
+                });
+                const result = await response.json();
+                if (result.result === 'success') {
+                    showStatus('uploadStatus', 'ส่งข้อมูลสำเร็จแล้ว! ทางร้านจะติดต่อกลับโดยเร็วที่สุด', true);
+                    form.reset();
+                } else {
+                    showStatus('uploadStatus', 'เกิดข้อผิดพลาดในการส่งข้อมูล', false);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus('uploadStatus', 'เกิดข้อผิดพลาดในการส่งข้อมูล', false);
+            } finally {
+                submitButton.disabled = false;
+            }
+        });
+
+        // Review Form Submission (Firestore)
+        document.getElementById('reviewForm').addEventListener('submit', handleReviewSubmission);
+        
+        // Hashtag logic on load
+        document.addEventListener('DOMContentLoaded', () => {
+            generateHashtags();
+        });
+
+        // Copy Hashtags to Clipboard
+        document.getElementById('copyHashtagsBtn').addEventListener('click', () => {
+            const selectedHashtags = Array.from(document.querySelectorAll('.hashtag-item.selected'))
+                                        .map(el => el.textContent)
+                                        .join(' ');
+            
+            const copyStatusDiv = document.getElementById('copyStatus');
+            if (selectedHashtags) {
+                navigator.clipboard.writeText(selectedHashtags).then(() => {
+                    copyStatusDiv.textContent = 'คัดลอกแฮชแท็กแล้ว!';
+                    copyStatusDiv.classList.remove('text-red-600');
+                    copyStatusDiv.classList.add('text-green-600');
+                }).catch(err => {
+                    console.error('Failed to copy text: ', err);
+                    copyStatusDiv.textContent = 'ไม่สามารถคัดลอกได้';
+                    copyStatusDiv.classList.remove('text-green-600');
+                    copyStatusDiv.classList.add('text-red-600');
+                });
+            } else {
+                copyStatusDiv.textContent = 'กรุณาเลือกแฮชแท็กก่อน';
+                copyStatusDiv.classList.remove('text-green-600');
+                copyStatusDiv.classList.add('text-red-600');
+            }
         });
     </script>
 </body>
