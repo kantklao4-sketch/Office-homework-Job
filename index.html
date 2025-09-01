@@ -15,6 +15,16 @@
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" xintegrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // Expose Firebase services to the global scope for use in the script below
+        window.firebase = { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, setLogLevel };
+    </script>
 
     <style>
         body {
@@ -117,6 +127,57 @@
         .unique-title-font {
             font-family: 'Fascinate Inline', sans-serif;
         }
+
+        /* Chatbox styles */
+        .chat-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border-bottom: 1px solid #3c4a5c;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column-reverse; /* New messages appear at the bottom */
+        }
+        .message-bubble {
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            margin-bottom: 0.5rem;
+            max-width: 80%;
+        }
+        .user-message {
+            background-color: #48BB78;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 0;
+        }
+        .ai-message {
+            background-color: #3c4a5c;
+            color: #e2e8f0;
+            align-self: flex-start;
+            border-bottom-left-radius: 0;
+        }
+        
+        /* Floating LINE button */
+        .floating-line-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 100;
+            background-color: #06C755;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .floating-line-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+        }
+        
     </style>
 </head>
 <body class="text-gray-200">
@@ -130,10 +191,11 @@
 
         <!-- Navigation Buttons -->
         <!-- Each button now has a 'data-target-id' attribute to link it to a section on the page -->
-        <div class="flex justify-center items-center space-x-2 md:space-x-4 mb-12">
-            <button class="nav-button font-semibold text-teal-400 ring-2 ring-teal-500" data-target-id="all-services-section">บริการทั้งหมด</button>
-            <button class="nav-button" data-target-id="academic-section">ด้านวิชาการ</button>
-            <button class="nav-button" data-target-id="technology-section">ด้านเทคโนโลยี</button>
+        <div class="flex justify-center items-center space-x-2 md:space-x-4 mb-12 flex-wrap">
+            <button class="nav-button font-semibold text-teal-400 ring-2 ring-teal-500 mb-2 md:mb-0" data-target-id="all-services-section">บริการทั้งหมด</button>
+            <button class="nav-button mb-2 md:mb-0" data-target-id="ai-services-section">บริการ AI</button>
+            <button class="nav-button mb-2 md:mb-0" data-target-id="academic-section">ด้านวิชาการ</button>
+            <button class="nav-button mb-2 md:mb-0" data-target-id="technology-section">ด้านเทคโนโลยี</button>
         </div>
 
         <!-- Service Cards Section - All Services -->
@@ -174,6 +236,74 @@
                 </p>
             </div>
         </div>
+
+        <!-- AI SERVICES SECTION -->
+        <div id="ai-services-section" class="text-center mt-16 py-10 rounded-2xl bg-dark-container border border-[#3c4a5c]">
+            <h2 class="text-2xl font-semibold mb-2">บริการ AI อัจฉริยะ</h2>
+            <p class="text-gray-400 mb-8">
+                ผู้ช่วย AI ที่พร้อมให้บริการและตอบคำถามของคุณตลอด 24 ชั่วโมง
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
+                
+                <!-- AI Chatbot Section -->
+                <div class="service-card flex flex-col items-center">
+                    <i class="fas fa-robot service-icon"></i>
+                    <h3 class="text-lg font-semibold mb-4">ผู้ช่วย AI ประจำร้าน</h3>
+                    <div id="chat-box" class="chat-container w-full h-80 bg-dark-input rounded-xl mb-4 text-left">
+                        <!-- Chat messages will be appended here -->
+                    </div>
+                    <form id="chatForm" class="w-full flex gap-2">
+                        <input type="text" id="chatInput" placeholder="พิมพ์ข้อความที่นี่..." class="input-field w-full p-2 text-sm" required>
+                        <button type="submit" id="chatSendBtn" class="bg-accent-teal text-white p-2 rounded-lg transition-all duration-300">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Price Calculator Section -->
+                <div class="service-card flex flex-col items-center">
+                    <i class="fas fa-calculator service-icon"></i>
+                    <h3 class="text-lg font-semibold mb-4">AI คำนวณราคาคร่าวๆ</h3>
+                    <form id="priceForm" class="w-full space-y-4 text-left">
+                        <div>
+                            <label for="projectType" class="text-sm">ประเภทงาน:</label>
+                            <input type="text" id="projectType" placeholder="เช่น รายงาน, บทความ, เว็บไซต์" class="input-field w-full p-2 text-sm mt-1" required>
+                        </div>
+                        <div>
+                            <label for="projectDetails" class="text-sm">รายละเอียดงาน:</label>
+                            <textarea id="projectDetails" rows="4" placeholder="จำนวนหน้า, ความซับซ้อน, เนื้อหา" class="input-field w-full p-2 text-sm mt-1" required></textarea>
+                        </div>
+                        <button type="submit" id="priceBtn" class="contact-button bg-blue-600 hover:bg-blue-700 w-full">
+                            <i class="fas fa-coins"></i>
+                            <span>ประเมินราคา</span>
+                        </button>
+                    </form>
+                    <div id="priceResult" class="mt-4 p-4 rounded-xl w-full bg-gray-800 text-sm">
+                        <!-- Price result will be displayed here -->
+                    </div>
+                </div>
+
+                <!-- Image Generator Section -->
+                <div class="service-card flex flex-col items-center">
+                    <i class="fas fa-paint-brush service-icon"></i>
+                    <h3 class="text-lg font-semibold mb-4">AI สร้างภาพจากข้อความ</h3>
+                    <form id="imageForm" class="w-full space-y-4 text-left">
+                        <div>
+                            <label for="imagePrompt" class="text-sm">คำอธิบายภาพ:</label>
+                            <textarea id="imagePrompt" rows="3" placeholder="ตัวอย่าง: แมวอวกาศกำลังลอยอยู่บนดาวเคราะห์" class="input-field w-full p-2 text-sm mt-1" required></textarea>
+                        </div>
+                        <button type="submit" id="imageBtn" class="contact-button bg-purple-600 hover:bg-purple-700 w-full">
+                            <i class="fas fa-palette"></i>
+                            <span>สร้างภาพ</span>
+                        </button>
+                    </form>
+                    <div id="imageResult" class="mt-4 w-full">
+                        <img id="generatedImage" src="https://placehold.co/400x300/283544/b0c0d0?text=ภาพจะปรากฏที่นี่" alt="Generated Image" class="w-full rounded-xl">
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
         <!-- ACADEMIC SERVICES SECTION -->
         <div id="academic-section" class="text-center mt-16 py-10 rounded-2xl">
@@ -228,7 +358,7 @@
         </div>
 
 
-        <!-- CONTACT US SECTION (Moved to the top) -->
+        <!-- CONTACT US SECTION -->
         <div id="contact-section" class="text-center mt-16 py-10 rounded-2xl">
             <h2 class="text-2xl font-semibold mb-2">สนใจติดต่อสอบถาม</h2>
             <p class="text-gray-400 mb-8">รับรองผลงานคุณภาพ ตรงเวลา พร้อมให้บริการทุกความต้องการ</p>
@@ -237,7 +367,7 @@
                     <i class="fas fa-phone-alt"></i>
                     <span>080-1120371</span>
                 </a>
-                <a href="https://line.me/ti/p/QKbEM-R-NX" target="_blank" class="contact-button bg-green-500 hover:bg-green-600">
+                <a href="https://lin.ee/sjH4AZO" target="_blank" class="contact-button bg-green-500 hover:bg-green-600">
                     <i class="fab fa-line"></i>
                     <span>Line ID: doopra99</span>
                 </a>
@@ -246,18 +376,17 @@
                     <span>Facebook</span>
                 </a>
                 <!-- Other Services Link -->
-                <a href="#" id="other-services-link" target="_blank" class="contact-button bg-gray-500 hover:bg-gray-600">
+                <a href="https://lin.ee/sjH4AZO" target="_blank" class="contact-button bg-gray-500 hover:bg-gray-600">
                     <i class="fas fa-plus-circle"></i>
                     <span>สินค้าและบริการอื่นๆ</span>
                 </a>
             </div>
         </div>
         
-        <!-- UPLOAD SECTION (Moved after Contact Us) -->
+        <!-- UPLOAD SECTION -->
         <div id="upload-section" class="text-center mt-16 py-10 rounded-2xl">
             <h2 class="text-2xl font-semibold mb-2">แนบไฟล์เพื่อประเมินราคา</h2>
             <p class="text-gray-400 mb-8">กรุณากรอกข้อมูลและแนบไฟล์งานของคุณเพื่อสอบถามราคา</p>
-            <!-- Form points to the Apps Script URL -->
             <form id="uploadForm" class="max-w-lg mx-auto text-left space-y-4">
                 <div>
                     <label for="name" class="font-medium text-gray-200">ชื่อ-สกุล</label>
@@ -268,7 +397,6 @@
                     <input type="text" id="contact" name="contact" class="w-full mt-1 p-2 input-field" required>
                 </div>
                 <div>
-                    <!-- Note: File name is passed as text, not the file itself -->
                     <label for="file" class="font-medium text-gray-200">แนบไฟล์งาน</label>
                     <input type="file" id="file" name="file" class="w-full mt-1 text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-700 file:text-teal-200 hover:file:bg-teal-600">
                 </div>
@@ -302,41 +430,31 @@
                     </div>
                     <div>
                         <label class="block text-left text-gray-400 font-medium mb-1">
-                            แนบรูปภาพ (ไม่เกิน 2MB)
+                            แนบรูปภาพ (สำหรับแสดงผลบนเครื่องเท่านั้น - ไม่ถูกอัปโหลด)
                         </label>
                         <input type="file" id="reviewImage" accept="image/*" class="w-full p-2 text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-700 file:text-teal-200 hover:file:bg-teal-600">
                     </div>
                     <div class="text-center">
-                        <button type="submit" class="contact-button bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
+                        <button type="submit" id="submitReviewBtn" class="contact-button bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
                             <i class="fas fa-comment-dots"></i>
                             <span>โพสต์รีวิว</span>
                         </button>
                     </div>
                 </form>
-        
+                
                 <!-- Review Display Area -->
                 <div id="reviewsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-                    <!-- Example Review Card (You can populate this with real data) -->
-                    <div class="bg-dark-card p-4 rounded-xl shadow-md border-2 border-[#3c4a5c]">
-                        <p class="text-sm text-gray-400 mb-2">เขียนโดย: <span class="font-semibold text-gray-200">ลูกค้าท่านหนึ่ง</span></p>
-                        <img src="https://via.placeholder.com/400x300.png?text=Sample+Image" alt="Review Image" class="w-full rounded-lg mb-4">
-                        <p class="text-light-gray">
-                            "งานดีมากครับ ส่งตรงเวลาและแก้ไขงานให้ตามที่ต้องการเลย ประทับใจจริงๆ"
-                        </p>
-                    </div>
-                    
-                    <!-- Another Example -->
-                    <div class="bg-dark-card p-4 rounded-xl shadow-md border-2 border-[#3c4a5c]">
-                        <p class="text-sm text-gray-400 mb-2">เขียนโดย: <span class="font-semibold text-gray-200">คุณอรอนงค์</span></p>
-                        <p class="text-light-gray">
-                            "งานเขียนบทความคุณภาพดีค่ะ ช่วยให้ธุรกิจของเรามีเนื้อหาที่ดีขึ้นเยอะเลย"
-                        </p>
-                    </div>
+                    <!-- Reviews will be dynamically inserted here by the script -->
                 </div>
             </div>
         </div>
 
     </div>
+    
+    <!-- Floating LINE button -->
+    <a href="https://lin.ee/sjH4AZO" target="_blank" class="floating-line-button">
+        <i class="fab fa-line text-4xl"></i>
+    </a>
     
     <script>
         // Set the Apps Script Web App URL here
@@ -348,6 +466,12 @@
         let animationFrameId = null;
         let isAtEnd = false;
         let endScrollTimer = null;
+        
+        // --- Firebase Globals ---
+        let app, db, auth, userId;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const API_KEY = ""; // Leave this empty, it will be provided in the runtime
 
         // Function to start auto-scrolling
         function startAutoScroll() {
@@ -389,49 +513,385 @@
                 console.log("Auto-scrolling stopped due to user interaction.");
             }
         }
+        
+        // Function to display a status message
+        function showStatus(message, isSuccess = true) {
+            const statusDiv = document.getElementById('reviewStatus');
+            if (statusDiv) {
+                statusDiv.textContent = message;
+                statusDiv.className = `mt-4 text-lg font-medium ${isSuccess ? 'text-green-600' : 'text-red-600'}`;
+            }
+        }
 
-        // Function to handle review form submission
-        function handleReviewSubmission(e) {
-            e.preventDefault();
-            stopAutoScroll();
-
-            const name = document.getElementById('reviewerName').value || 'ลูกค้าไม่ประสงค์ออกนาม';
-            const reviewText = document.getElementById('reviewText').value;
-            const reviewImage = document.getElementById('reviewImage').files[0];
-
+        // Function to render a review card
+        function renderReviewCard(review) {
+            const reviewsContainer = document.getElementById('reviewsContainer');
             const newReview = document.createElement('div');
             newReview.className = 'bg-dark-card p-4 rounded-xl shadow-md border-2 border-[#3c4a5c] review-card';
 
-            let imageHTML = '';
-            if (reviewImage) {
-                const imageUrl = URL.createObjectURL(reviewImage);
-                imageHTML = `<img src="${imageUrl}" alt="Review Image" class="w-full rounded-lg mb-4">`;
-            }
+            const name = review.name || 'ลูกค้าไม่ประสงค์ออกนาม';
+            const reviewText = review.reviewText;
+            const imageUrl = review.imageUrl || 'https://placehold.co/400x300/1e2a38/b0c0d0?text=ไม่มีรูปภาพ';
 
             newReview.innerHTML = `
-                <p class="text-sm text-gray-400 mb-2">เขียนโดย: <span class="font-semibold text-gray-200">${name}</span></p>
-                ${imageHTML}
-                <p class="text-light-gray">${reviewText}</p>
+                <p class="text-sm text-gray-400 mb-2">
+                    เขียนโดย: <span class="font-semibold text-gray-200">${name}</span>
+                </p>
+                <img src="${imageUrl}" alt="Review Image" class="w-full rounded-lg mb-4">
+                <p class="text-light-gray">
+                    "${reviewText}"
+                </p>
             `;
+            reviewsContainer.prepend(newReview);
+        }
+        
+        // Function to handle review form submission
+        async function handleReviewSubmission(e) {
+            e.preventDefault();
+            stopAutoScroll();
 
-            document.getElementById('reviewsContainer').prepend(newReview);
-            document.getElementById('reviewForm').reset();
+            const submitBtn = document.getElementById('submitReviewBtn');
+            const reviewForm = document.getElementById('reviewForm');
+            const name = document.getElementById('reviewerName').value.trim() || 'ลูกค้าไม่ประสงค์ออกนาม';
+            const reviewText = document.getElementById('reviewText').value.trim();
+            const reviewImage = document.getElementById('reviewImage').files[0];
+
+            if (!reviewText) {
+                showStatus('กรุณาเขียนรีวิวก่อนส่ง', false);
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span class="ml-2">กำลังโพสต์...</span>';
+
+            const reviewData = {
+                name: name,
+                reviewText: reviewText,
+                timestamp: firebase.serverTimestamp(),
+            };
+            
+            // Note: This example does not upload the image to a server.
+            // It just logs a message for the user. To make this functional,
+            // you would need to implement Firebase Storage.
+            if (reviewImage) {
+                console.log("Image attached, but not uploaded to the server in this version.");
+                console.log("Image name:", reviewImage.name);
+                // For a real-world app, use Firebase Storage to upload the image here
+                // and save the URL to the Firestore document.
+                reviewData.imageUrl = 'https://placehold.co/400x300/1e2a38/b0c0d0?text=Image+Not+Uploaded';
+            } else {
+                reviewData.imageUrl = 'https://placehold.co/400x300/1e2a38/b0c0d0?text=No+Image';
+            }
+
+            try {
+                const reviewsCollectionRef = firebase.collection(db, `artifacts/${appId}/public/data/reviews`);
+                await firebase.addDoc(reviewsCollectionRef, reviewData);
+                showStatus('โพสต์รีวิวสำเร็จแล้ว! ขอบคุณครับ', true);
+                reviewForm.reset();
+            } catch (error) {
+                console.error('Error posting review:', error);
+                showStatus('เกิดข้อผิดพลาดในการโพสต์รีวิว', false);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-comment-dots"></i><span>โพสต์รีวิว</span>';
+            }
+        }
+        
+        // Function to fetch and listen for real-time reviews
+        function listenForReviews() {
+            const reviewsContainer = document.getElementById('reviewsContainer');
+            reviewsContainer.innerHTML = ''; // Clear existing reviews
+            
+            const reviewsCollectionRef = firebase.collection(db, `artifacts/${appId}/public/data/reviews`);
+            const q = firebase.query(reviewsCollectionRef, firebase.orderBy('timestamp', 'desc'));
+            
+            firebase.onSnapshot(q, (snapshot) => {
+                reviewsContainer.innerHTML = ''; // Clear to prevent duplicates
+                snapshot.forEach((doc) => {
+                    const review = doc.data();
+                    renderReviewCard(review);
+                });
+                // After fetching, restart auto-scroll if no user interaction
+                if (!isAutoScrollActive) {
+                    isAutoScrollActive = true;
+                    startAutoScroll();
+                }
+            }, (error) => {
+                console.error("Error fetching reviews:", error);
+            });
+        }
+        
+        // --- AI Function Implementations ---
+
+        // AI Chatbot Function
+        async function handleChatSubmission(e) {
+            e.preventDefault();
+            const chatInput = document.getElementById('chatInput');
+            const chatBox = document.getElementById('chat-box');
+            const chatSendBtn = document.getElementById('chatSendBtn');
+            const userMessage = chatInput.value.trim();
+
+            if (!userMessage) return;
+
+            // Display user's message
+            const userMsgElement = document.createElement('div');
+            userMsgElement.className = 'message-bubble user-message';
+            userMsgElement.textContent = userMessage;
+            chatBox.prepend(userMsgElement);
+
+            chatInput.value = '';
+            chatSendBtn.disabled = true;
+            chatSendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            try {
+                const systemPrompt = "คุณคือ AI ผู้ช่วยสำหรับร้าน Kant Klao Shop ที่ให้บริการงานเขียน รายงาน และเว็บไซต์ คุณสามารถให้ข้อมูลเกี่ยวกับบริการและราคางานโดยประมาณได้ แต่ต้องเน้นย้ำว่าราคาจริงอาจแตกต่างไปตามรายละเอียดงานและต้องติดต่อร้านค้าเพื่อยืนยันเสมอ";
+                const userQuery = userMessage;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+                
+                const payload = {
+                    contents: [{ parts: [{ text: userQuery }] }],
+                    tools: [{ "google_search": {} }],
+                    systemInstruction: {
+                        parts: [{ text: systemPrompt }]
+                    },
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                const aiMessage = result?.candidates?.[0]?.content?.parts?.[0]?.text || "ขออภัยครับ ไม่สามารถให้ข้อมูลได้ในขณะนี้";
+
+                // Display AI's message
+                const aiMsgElement = document.createElement('div');
+                aiMsgElement.className = 'message-bubble ai-message';
+                aiMsgElement.textContent = aiMessage;
+                chatBox.prepend(aiMsgElement);
+
+            } catch (error) {
+                console.error('Error fetching AI response:', error);
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'message-bubble ai-message';
+                errorMsg.textContent = 'ขออภัยครับ เกิดข้อผิดพลาดในการเชื่อมต่อ';
+                chatBox.prepend(errorMsg);
+            } finally {
+                chatSendBtn.disabled = false;
+                chatSendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+            }
         }
 
-        // Handle form submission and auto-scrolling events
-        document.addEventListener('DOMContentLoaded', function() {
-            const uploadForm = document.getElementById('uploadForm');
+        // Price Calculator Function
+        async function handlePriceCalculation(e) {
+            e.preventDefault();
+            const projectType = document.getElementById('projectType').value;
+            const projectDetails = document.getElementById('projectDetails').value;
+            const priceBtn = document.getElementById('priceBtn');
+            const priceResult = document.getElementById('priceResult');
+
+            priceBtn.disabled = true;
+            priceBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span class="ml-2">กำลังประเมิน...</span>';
+            priceResult.innerHTML = '';
+
+            try {
+                const prompt = `ประเมินราคาคร่าวๆ สำหรับงานประเภท "${projectType}" โดยมีรายละเอียดดังนี้: "${projectDetails}" ให้ตอบกลับเป็น JSON object ที่มี properties ดังนี้: "minPrice" (ราคาต่ำสุดเป็นตัวเลข), "maxPrice" (ราคาสูงสุดเป็นตัวเลข), และ "disclaimer" (ข้อความเตือนว่าราคาเป็นแค่การประมาณการและอาจเปลี่ยนแปลงได้)`;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                "minPrice": { "type": "NUMBER" },
+                                "maxPrice": { "type": "NUMBER" },
+                                "disclaimer": { "type": "STRING" }
+                            },
+                        }
+                    }
+                };
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                const jsonText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!jsonText) {
+                    throw new Error("Invalid JSON response from API.");
+                }
+                const priceData = JSON.parse(jsonText);
+
+                priceResult.innerHTML = `
+                    <p class="text-xl font-bold text-accent-teal mb-2">
+                        ราคาประเมินโดยประมาณ:
+                        <br>${priceData.minPrice.toLocaleString()} - ${priceData.maxPrice.toLocaleString()} บาท
+                    </p>
+                    <p class="text-xs text-gray-500 mt-2">${priceData.disclaimer}</p>
+                `;
+
+            } catch (error) {
+                console.error('Error calculating price:', error);
+                priceResult.innerHTML = '<p class="text-red-500">ขออภัยครับ เกิดข้อผิดพลาดในการประเมินราคา กรุณาลองใหม่อีกครั้ง</p>';
+            } finally {
+                priceBtn.disabled = false;
+                priceBtn.innerHTML = '<i class="fas fa-coins"></i><span>ประเมินราคา</span>';
+            }
+        }
+
+        // Image Generator Function
+        async function handleImageGeneration(e) {
+            e.preventDefault();
+            const imagePrompt = document.getElementById('imagePrompt').value;
+            const imageBtn = document.getElementById('imageBtn');
+            const generatedImage = document.getElementById('generatedImage');
+
+            imageBtn.disabled = true;
+            imageBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span class="ml-2">กำลังสร้างภาพ...</span>';
+            generatedImage.src = 'https://placehold.co/400x300/283544/b0c0d0?text=กำลังสร้างภาพ';
+
+            try {
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${API_KEY}`;
+                const payload = { instances: { prompt: imagePrompt }, parameters: { "sampleCount": 1} };
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                const base64Data = result?.predictions?.[0]?.bytesBase64Encoded;
+                if (!base64Data) {
+                    throw new Error("No image data received.");
+                }
+                const imageUrl = `data:image/png;base64,${base64Data}`;
+                generatedImage.src = imageUrl;
+
+            } catch (error) {
+                console.error('Error generating image:', error);
+                generatedImage.src = 'https://placehold.co/400x300/283544/b0c0d0?text=สร้างภาพไม่สำเร็จ';
+            } finally {
+                imageBtn.disabled = false;
+                imageBtn.innerHTML = '<i class="fas fa-palette"></i><span>สร้างภาพ</span>';
+            }
+        }
+        
+        // Initialize Firebase and set up event listeners
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Add a status message area for the review form
             const reviewForm = document.getElementById('reviewForm');
-            const statusDiv = document.getElementById('status');
+            const statusDiv = document.createElement('div');
+            statusDiv.id = 'reviewStatus';
+            statusDiv.className = 'mt-4 text-center text-lg font-medium';
+            reviewForm.parentNode.insertBefore(statusDiv, reviewForm.nextSibling);
+            
+            // Firebase setup
+            if (Object.keys(firebaseConfig).length > 0) {
+                try {
+                    firebase.setLogLevel('debug');
+                    app = firebase.initializeApp(firebaseConfig);
+                    auth = firebase.getAuth(app);
+                    db = firebase.getFirestore(app);
+                    
+                    if (typeof __initial_auth_token !== 'undefined') {
+                        await firebase.signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await firebase.signInAnonymously(auth);
+                    }
+                    
+                    auth.onAuthStateChanged(user => {
+                        if (user) {
+                            userId = user.uid;
+                            console.log("Firebase initialized. User ID:", userId);
+                            listenForReviews();
+                        } else {
+                            console.log("No user signed in.");
+                        }
+                    });
+                } catch (error) {
+                    console.error("Failed to initialize Firebase:", error);
+                }
+            } else {
+                console.error("Firebase config is missing. Review board will not be functional.");
+            }
+
+            const uploadForm = document.getElementById('uploadForm');
+            const reviewFormElement = document.getElementById('reviewForm');
+            const chatFormElement = document.getElementById('chatForm');
+            const priceFormElement = document.getElementById('priceForm');
+            const imageFormElement = document.getElementById('imageForm');
+
+            const statusUploadDiv = document.getElementById('status');
             const submitButton = document.getElementById('submitButton');
             const navButtons = document.querySelectorAll('.nav-button');
 
-            // Set the link for "Other Services"
-            const otherServicesLink = document.getElementById('other-services-link');
-            if (otherServicesLink) {
-                // **Replace this URL with your desired link**
-                const newURL = "https://your-website.com/other-products";
-                otherServicesLink.href = newURL;
+            // Add event listeners for new AI forms
+            if (chatFormElement) {
+                chatFormElement.addEventListener('submit', handleChatSubmission);
+            }
+            if (priceFormElement) {
+                priceFormElement.addEventListener('submit', handlePriceCalculation);
+            }
+            if (imageFormElement) {
+                imageFormElement.addEventListener('submit', handleImageGeneration);
+            }
+
+            if (reviewFormElement) {
+                reviewFormElement.addEventListener('submit', handleReviewSubmission);
+            }
+
+            if (uploadForm) {
+                uploadForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    stopAutoScroll();
+
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span class="ml-2">กำลังอัปโหลด...</span>';
+                    statusUploadDiv.textContent = '';
+
+                    const formData = new FormData(uploadForm);
+                    
+                    const fileInput = document.getElementById('file');
+                    const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : 'ไม่มีไฟล์แนบ';
+                    
+                    const data = {
+                        name: formData.get('name'),
+                        contact: formData.get('contact'),
+                        details: formData.get('details'),
+                        file: fileName
+                    };
+
+                    try {
+                        const response = await fetch(APP_SCRIPT_URL, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: new URLSearchParams(data).toString(),
+                        });
+
+                        console.log("Form submission response:", response);
+
+                        statusUploadDiv.textContent = 'ส่งข้อมูลสำเร็จแล้ว! ขอบคุณที่ใช้บริการ';
+                        statusUploadDiv.className = 'mt-4 text-lg font-medium text-green-600';
+                        uploadForm.reset();
+                    } catch (error) {
+                        console.error('Error submitting form:', error);
+                        statusUploadDiv.textContent = 'เกิดข้อผิดพลาดในการส่งข้อมูล';
+                        statusUploadDiv.className = 'mt-4 text-lg font-medium text-red-600';
+                    } finally {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<i class="fas fa-paper-plane"></i><span>ส่งข้อมูลเพื่อประเมินราคา</span>';
+                    }
+                });
             }
 
             // Add smooth scrolling to the navigation buttons
@@ -452,63 +912,6 @@
                 });
             });
 
-            if (reviewForm) {
-                reviewForm.addEventListener('submit', handleReviewSubmission);
-            }
-
-            if (uploadForm) {
-                uploadForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    
-                    stopAutoScroll();
-
-                    // Disable the button and show loading status
-                    submitButton.disabled = true;
-                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span class="ml-2">กำลังอัปโหลด...</span>';
-                    statusDiv.textContent = '';
-
-                    const formData = new FormData(uploadForm);
-                    
-                    // We need to get the file name as a string, as we can't upload the file directly to Apps Script in a simple way
-                    const fileInput = document.getElementById('file');
-                    const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : 'ไม่มีไฟล์แนบ';
-                    
-                    // Construct the data payload, including the file name
-                    const data = {
-                        name: formData.get('name'),
-                        contact: formData.get('contact'),
-                        details: formData.get('details'),
-                        file: fileName
-                    };
-
-                    try {
-                        const response = await fetch(APP_SCRIPT_URL, {
-                            method: 'POST',
-                            mode: 'no-cors', // Apps Script needs no-cors mode
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            },
-                            body: new URLSearchParams(data).toString(),
-                        });
-
-                        // Note: The response from Apps Script is always "opaque" due to no-cors mode,
-                        // so we can't read the response text directly.
-                        console.log("Form submission response:", response);
-
-                        // Simulate success UI update
-                        statusDiv.textContent = 'ส่งข้อมูลสำเร็จแล้ว! ขอบคุณที่ใช้บริการ';
-                        statusDiv.className = 'mt-4 text-lg font-medium text-green-600';
-                        uploadForm.reset();
-                    } catch (error) {
-                        console.error('Error submitting form:', error);
-                        statusDiv.textContent = 'เกิดข้อผิดพลาดในการส่งข้อมูล';
-                        statusDiv.className = 'mt-4 text-lg font-medium text-red-600';
-                    } finally {
-                        submitButton.disabled = false;
-                        submitButton.innerHTML = '<i class="fas fa-paper-plane"></i><span>ส่งข้อมูลเพื่อประเมินราคา</span>';
-                    }
-                });
-            }
 
             // Start and stop auto-scrolling
             startAutoScroll();
