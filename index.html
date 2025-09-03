@@ -99,11 +99,6 @@
             @apply flex items-center justify-center gap-3 px-6 py-3 text-white font-medium rounded-full shadow-lg transition-transform transform hover:scale-105;
         }
         
-        /* File input button style */
-        input[type="file"]::file-selector-button {
-            @apply bg-accent-teal text-white font-semibold py-2 px-4 border-0 rounded-lg cursor-pointer hover:bg-accent-teal transition-all;
-        }
-
         /* New input field style */
         .input-field {
             background-color: #1e2a38;
@@ -156,66 +151,77 @@
             border-bottom-left-radius: 0;
         }
         
-        /* Floating LINE button */
-        .floating-line-button {
+        /* Floating Buttons Container */
+        .floating-buttons-container {
             position: fixed;
             bottom: 2rem;
             right: 2rem;
             z-index: 100;
-            background-color: #06C755;
-            color: white;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
             display: flex;
             align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .floating-line-button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+            gap: 1rem; /* Spacing between the buttons */
         }
         
-        /* Loading spinner for image generation */
-        .image-loading {
-            border-radius: 12px;
+        /* Floating Chat button */
+        .floating-chat-button {
+            background-color: #0d9488; /* Tailwind teal-700 */
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: transform 0.3s, background-color 0.3s;
+        }
+        .floating-chat-button:hover {
+            transform: scale(1.05);
+            background-color: #115e59; /* Tailwind teal-800 */
+        }
+        
+        /* Chat Modal */
+        .chat-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: 300px;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .chat-modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .chat-modal {
             background-color: #1e2a38;
-            color: #48BB78;
+            border: 1px solid #3c4a5c;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 500px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #e2e8f0;
+            cursor: pointer;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
         }
         
-        /* Hashtag styles */
-        .hashtag-card {
-            background-color: #1e2a38;
-            padding: 1rem;
-            border-radius: 1rem;
-            border: 1px solid #3c4a5c;
-        }
-        .hashtag-item {
-            display: inline-block;
-            background-color: #2d3748;
-            color: #e2e8f0;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px; /* rounded-full */
-            margin: 0.25rem;
-            cursor: pointer;
-            transition: background-color 0.2s, color 0.2s;
-        }
-        .hashtag-item:hover {
-            background-color: #4a5568;
-        }
-        .hashtag-item.selected {
-            background-color: #48BB78;
-            color: white;
-            border: 2px solid white;
-        }
-
     </style>
 </head>
 <body class="text-gray-200">
@@ -231,7 +237,6 @@
         <!-- Each button now has a 'data-target-id' attribute to link it to a section on the page -->
         <div class="flex justify-center items-center space-x-2 md:space-x-4 mb-12 flex-wrap">
             <button class="nav-button font-semibold text-teal-400 ring-2 ring-teal-500 mb-2 md:mb-0" data-target-id="all-services-section">บริการทั้งหมด</button>
-            <button class="nav-button mb-2 md:mb-0" data-target-id="dek-fao-ran-services-section">บริการเด็กเฝ้าร้าน</button>
             <button class="nav-button mb-2 md:mb-0" data-target-id="academic-section">ด้านวิชาการ</button>
             <button class="nav-button mb-2 md:mb-0" data-target-id="technology-section">ด้านเทคโนโลยี</button>
         </div>
@@ -274,75 +279,6 @@
                 </p>
             </div>
         </div>
-
-        <!-- เด็กเฝ้าร้าน SERVICES SECTION -->
-        <div id="dek-fao-ran-services-section" class="text-center mt-16 py-10 rounded-2xl bg-dark-container border border-[#3c4a5c]">
-            <h2 class="text-2xl font-semibold mb-2">บริการเด็กเฝ้าร้าน อัจฉริยะ</h2>
-            <p class="text-gray-400 mb-8">
-                ผู้ช่วยเด็กเฝ้าร้าน ที่พร้อมให้บริการและตอบคำถามของคุณตลอด 24 ชั่วโมง
-            </p>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
-                
-                <!-- เด็กเฝ้าร้าน Chatbot Section -->
-                <div class="service-card flex flex-col items-center">
-                    <i class="fas fa-robot service-icon"></i>
-                    <h3 class="text-lg font-semibold mb-4">ผู้ช่วยเด็กเฝ้าร้าน ประจำร้าน</h3>
-                    <div id="chat-box" class="chat-container w-full h-80 bg-dark-input rounded-xl mb-4 text-left">
-                        <!-- Chat messages will be appended here -->
-                    </div>
-                    <form id="chatForm" class="w-full flex gap-2">
-                        <input type="text" id="chatInput" placeholder="พิมพ์ข้อความที่นี่..." class="input-field w-full p-2 text-sm" required>
-                        <button type="submit" id="chatSendBtn" class="bg-accent-teal text-white p-2 rounded-lg transition-all duration-300">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Price Calculator Section -->
-                <div class="service-card flex flex-col items-center">
-                    <i class="fas fa-calculator service-icon"></i>
-                    <h3 class="text-lg font-semibold mb-4">เด็กเฝ้าร้าน คำนวณราคาคร่าวๆ</h3>
-                    <form id="priceForm" class="w-full space-y-4 text-left">
-                        <div>
-                            <label for="projectType" class="text-sm">ประเภทงาน:</label>
-                            <input type="text" id="projectType" placeholder="เช่น รายงาน, บทความ, เว็บไซต์" class="input-field w-full p-2 text-sm mt-1" required>
-                        </div>
-                        <div>
-                            <label for="projectDetails" class="text-sm">รายละเอียดงาน:</label>
-                            <textarea id="projectDetails" rows="4" placeholder="จำนวนหน้า, ความซับซ้อน, เนื้อหา" class="input-field w-full p-2 text-sm mt-1" required></textarea>
-                        </div>
-                        <button type="submit" id="priceBtn" class="contact-button bg-blue-600 hover:bg-blue-700 w-full">
-                            <i class="fas fa-coins"></i>
-                            <span>ประเมินราคา</span>
-                        </button>
-                    </form>
-                    <div id="priceResult" class="mt-4 p-4 rounded-xl w-full bg-gray-800 text-sm">
-                        <!-- Price result will be displayed here -->
-                    </div>
-                </div>
-
-                <!-- Image Generator Section -->
-                <div class="service-card flex flex-col items-center">
-                    <i class="fas fa-paint-brush service-icon"></i>
-                    <h3 class="text-lg font-semibold mb-4">เด็กเฝ้าร้าน สร้างภาพจากข้อความ</h3>
-                    <form id="imageForm" class="w-full space-y-4 text-left">
-                        <div>
-                            <label for="imagePrompt" class="text-sm">คำอธิบายภาพ:</label>
-                            <textarea id="imagePrompt" rows="3" placeholder="ตัวอย่าง: แมวอวกาศกำลังลอยอยู่บนดาวเคราะห์" class="input-field w-full p-2 text-sm mt-1" required></textarea>
-                        </div>
-                        <button type="submit" id="imageBtn" class="contact-button bg-purple-600 hover:bg-purple-700 w-full">
-                            <i class="fas fa-palette"></i>
-                            <span>สร้างภาพ</span>
-                        </button>
-                    </button>
-                    </form>
-                    <div id="imageResult" class="mt-4 w-full">
-                        <img id="generatedImage" src="https://placehold.co/400x300/283544/b0c0d0?text=ภาพจะปรากฏที่นี่" alt="Generated Image" class="w-full rounded-xl">
-                    </div>
-                </div>
-            </div>
-        </div>
-
 
         <!-- ACADEMIC SERVICES SECTION -->
         <div id="academic-section" class="text-center mt-16 py-10 rounded-2xl">
@@ -396,7 +332,6 @@
             </div>
         </div>
 
-
         <!-- CONTACT US SECTION -->
         <div id="contact-section" class="text-center mt-16 py-10 rounded-2xl">
             <h2 class="text-2xl font-semibold mb-2">สนใจติดต่อสอบถาม</h2>
@@ -406,9 +341,9 @@
                     <i class="fas fa-phone-alt"></i>
                     <span>080-1120371</span>
                 </a>
-                <a href="https://lin.ee/sjH4AZO" target="_blank" class="contact-button bg-green-500 hover:bg-green-600">
-                    <i class="fab fa-line"></i>
-                    <span>Line ID: doopra99</span>
+                <!-- Updated Line button with the user-provided image -->
+                <a href="https://lin.ee/7W36iij" target="_blank" class="contact-button bg-green-500 hover:bg-green-600 p-0">
+                    <img src="https://scdn.line-apps.com/n/line_add_friends/btn/th.png" alt="เพิ่มเพื่อน" height="36" border="0">
                 </a>
                 <a href="https://www.facebook.com/rab.thakar.ban.rayngan.rab.tha.kickrrm.p" target="_blank" class="contact-button bg-blue-600 hover:bg-blue-700">
                     <i class="fab fa-facebook"></i>
@@ -422,37 +357,6 @@
             </div>
         </div>
         
-        <!-- UPLOAD SECTION -->
-        <div id="upload-section" class="text-center mt-16 py-10 rounded-2xl">
-            <h2 class="text-2xl font-semibold mb-2">แนบไฟล์เพื่อประเมินราคา</h2>
-            <p class="text-gray-400 mb-8">กรุณากรอกข้อมูลและแนบไฟล์งานของคุณเพื่อสอบถามราคา</p>
-            <form id="uploadForm" class="max-w-lg mx-auto text-left space-y-4">
-                <div>
-                    <label for="name" class="font-medium text-gray-200">ชื่อ-สกุล</label>
-                    <input type="text" id="name" name="name" class="w-full mt-1 p-2 input-field" required>
-                </div>
-                <div>
-                    <label for="contact" class="font-medium text-gray-200">ช่องทางติดต่อ (เบอร์โทร หรือ Line ID)</label>
-                    <input type="text" id="contact" name="contact" class="w-full mt-1 p-2 input-field" required>
-                </div>
-                <div>
-                    <label for="file" class="font-medium text-gray-200">แนบไฟล์งาน</label>
-                    <input type="file" id="file" name="file" class="w-full mt-1 text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-700 file:text-teal-200 hover:file:bg-teal-600">
-                </div>
-                <div>
-                    <label for="details" class="font-medium text-gray-200">รายละเอียดเพิ่มเติม</label>
-                    <textarea id="details" name="details" rows="4" class="w-full mt-1 p-2 input-field"></textarea>
-                </div>
-                <div class="text-center">
-                    <button type="submit" id="submitButton" class="contact-button bg-teal-500 hover:bg-teal-600 w-full sm:w-auto">
-                        <i class="fas fa-paper-plane"></i>
-                        <span>ส่งข้อมูลเพื่อประเมินราคา</span>
-                    </button>
-                </div>
-            </form>
-            <div id="uploadStatus" class="mt-4 text-lg font-medium text-center"></div>
-        </div>
-
         <!-- Review and Image Board Section -->
         <div id="review-board" class="text-center mt-16 py-10 rounded-2xl bg-dark-container border border-[#3c4a5c]">
             <h2 class="text-2xl font-semibold mb-2">บอร์ดผลงานและรีวิวจากลูกค้า</h2>
@@ -516,17 +420,43 @@
 
     </div>
     
-    <!-- Floating LINE button -->
-    <a href="https://lin.ee/sjH4AZO" target="_blank" class="floating-line-button">
-        <i class="fab fa-line text-4xl"></i>
-    </a>
+    <!-- Floating Buttons Container -->
+    <div class="floating-buttons-container">
+        <!-- New Floating Line Button -->
+        <a href="https://lin.ee/7W36iij" target="_blank">
+            <img src="https://scdn.line-apps.com/n/line_add_friends/btn/th.png" alt="เพิ่มเพื่อน" height="50">
+        </a>
+        
+        <!-- Floating Chat Button -->
+        <button id="floating-chat-button" class="floating-chat-button">
+            <i class="fas fa-robot"></i>
+            <span>สอบถาม bot เฝ้าร้าน</span>
+        </button>
+    </div>
+
+    <!-- Chat Modal Overlay -->
+    <div id="chat-modal-overlay" class="chat-modal-overlay">
+        <div id="chat-modal" class="chat-modal">
+            <button id="chat-close-button" class="close-button">&times;</button>
+            <h3 class="text-lg font-semibold mb-4 text-center">ผู้ช่วยเด็กเฝ้าร้าน ประจำร้าน</h3>
+            <div id="chat-box" class="chat-container w-full h-80 bg-dark-input rounded-xl mb-4 text-left">
+                <!-- Chat messages will be appended here -->
+            </div>
+            <form id="chatForm" class="w-full flex gap-2">
+                <input type="text" id="chatInput" placeholder="พิมพ์ข้อความที่นี่..." class="input-field w-full p-2 text-sm" required>
+                <button type="submit" id="chatSendBtn" class="bg-accent-teal text-white p-2 rounded-lg transition-all duration-300">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </div>
     
     <script>
         // Set the Apps Script Web App URL here
         // **IMPORTANT: REPLACE THIS URL WITH YOURS**
         const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5l1C_S3bspMmdAfJLvBlVDRnowHLLXP6_SuHrLakc5iOMHksHd_OCjA8QUA_KQ5zc2w/exec";
 
-        // Global variables for auto-scrolling
+        // Global variables for auto-scrolling 
         let isAutoScrollActive = true;
         let animationFrameId = null;
         let isAtEnd = false;
@@ -580,7 +510,7 @@
             const reviewImage = document.getElementById('reviewImage').files[0];
 
             if (!reviewText) {
-                showStatus('reviewStatus', 'กรุณาเขียนรีวิวก่อนส่ง', false);
+                showStatus('reviewStatus', 'กรุณาเขียนรีวิว' , false);
                 return;
             }
 
@@ -647,9 +577,9 @@
             });
         }
         
-        // --- เด็กเฝ้าร้าน Function Implementations ---
+        // --- เด็กเฝ้าร้าน Chatbot Function Implementations ---
 
-        // เด็กเฝ้าร้าน Chatbot Function
+        // Function to handle chat prompt submission
         async function sendChatPrompt(prompt) {
             const chatBox = document.getElementById('chat-box');
             const chatInput = document.getElementById('chatInput');
@@ -663,365 +593,265 @@
 
             // Add loading indicator
             const loadingDiv = document.createElement('div');
-            loadingDiv.className = 'message-bubble dek-fao-ran-message';
-            loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i><span>เด็กเฝ้าร้าน กำลังตอบ...</span>';
+            loadingDiv.className = 'message-bubble dek-fao-ran-message animate-pulse';
+            loadingDiv.textContent = 'กำลังพิมพ์...';
             chatBox.prepend(loadingDiv);
-
+            chatBox.scrollTop = chatBox.scrollHeight;
+            
             chatInput.value = '';
+            chatInput.disabled = true;
             chatSendBtn.disabled = true;
 
-            const chatHistory = [{
-                role: 'user',
-                parts: [{ text: prompt }]
-            }];
-
-            const payload = {
-                contents: chatHistory,
-                systemInstruction: {
-                    parts: [{ text: "You are 'เด็กเฝ้าร้าน' (Dek Fao Ran), a friendly and helpful shop assistant for Kant Klao Shop. You answer questions about the shop's services in a casual, polite, and helpful manner in Thai. Your services include academic writing (reports, articles, research), technology services (web/app development, spreadsheet/database management), and general writing (content, blogs). When asked about pricing, always state that the price is estimated and depends on the complexity of the work, and the user should contact the provided Line ID or phone number for an exact quote." }]
-                }
-            };
-
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
-            
             try {
-                const response = await fetch(apiUrl, {
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+                const payload = {
+                    contents: [{
+                        parts: [{ text: prompt }]
+                    }],
+                    tools: [{ "google_search": {} }],
+                    systemInstruction: {
+                        parts: [{ text: "You are a professional shop assistant for 'Kant Klao Shop' in Thailand. Your name is 'Dek Fao Ran' (เด็กเฝ้าร้าน). Your role is to help customers, answer their questions about services, prices, and processes in a friendly and professional tone. Only provide information about the services listed on the website. Respond in Thai only." }]
+                    },
+                };
+                
+                let response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                
-                const result = await response.json();
-                const responseText = result?.candidates?.[0]?.content?.parts?.[0]?.text || 'ขออภัยครับ ไม่สามารถให้คำตอบได้ในขณะนี้';
 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                
                 // Remove loading indicator
-                chatBox.removeChild(loadingDiv);
+                loadingDiv.remove();
 
-                // Add assistant's message
-                const assistantMessageDiv = document.createElement('div');
-                assistantMessageDiv.className = 'message-bubble dek-fao-ran-message';
-                assistantMessageDiv.textContent = responseText;
-                chatBox.prepend(assistantMessageDiv);
-
-            } catch (error) {
-                console.error('Error generating chat response:', error);
-                chatBox.removeChild(loadingDiv);
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'message-bubble dek-fao-ran-message';
-                errorDiv.textContent = 'ขออภัยครับ เกิดข้อผิดพลาดในการเชื่อมต่อ';
-                chatBox.prepend(errorDiv);
-            } finally {
-                chatSendBtn.disabled = false;
-            }
-        }
-
-        // Price Calculator Function
-        async function handlePriceCalculation(e) {
-            e.preventDefault();
-            const priceResult = document.getElementById('priceResult');
-            const projectType = document.getElementById('projectType').value;
-            const projectDetails = document.getElementById('projectDetails').value;
-            const priceBtn = document.getElementById('priceBtn');
-
-            priceBtn.disabled = true;
-            priceBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span> กำลังประเมิน...</span>';
-            priceResult.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังประเมินราคาคร่าวๆ...';
-
-            const userQuery = `ฉันต้องการทราบราคาสำหรับงาน ${projectType} โดยมีรายละเอียดดังนี้: ${projectDetails} ช่วยประเมินราคาให้หน่อย`;
-            const systemPrompt = "คุณเป็นนักวิเคราะห์ราคาสำหรับ Kant Klao Shop ที่ให้บริการงานเขียนและงานเทคโนโลยี ตอบคำถามเกี่ยวกับการประเมินราคาในภาษาไทยอย่างเป็นกันเองและให้ข้อมูลที่ชัดเจน อ้างอิงถึงรายละเอียดงานที่ลูกค้าให้มาเสมอ และย้ำว่าราคาที่ให้เป็นเพียงการประเมินเบื้องต้นเท่านั้น พร้อมแนะนำให้ลูกค้าติดต่อเพื่อขอราคาที่แน่นอนผ่าน Line ID: doopra99 หรือโทรศัพท์ 080-1120371";
-
-            const payload = {
-                contents: [{ parts: [{ text: userQuery }] }],
-                tools: [{ "google_search": {} }],
-                systemInstruction: { parts: [{ text: systemPrompt }] },
-            };
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
-
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-                const text = result?.candidates?.[0]?.content?.parts?.[0]?.text || 'ขออภัยครับ ไม่สามารถประเมินราคาได้ในขณะนี้ กรุณาติดต่อเราโดยตรง';
-                priceResult.textContent = text;
-            } catch (error) {
-                console.error('Error calculating price:', error);
-                priceResult.textContent = 'เกิดข้อผิดพลาดในการประเมินราคา กรุณาลองใหม่อีกครั้ง';
-            } finally {
-                priceBtn.disabled = false;
-                priceBtn.innerHTML = '<i class="fas fa-coins"></i><span>ประเมินราคา</span>';
-            }
-        }
-
-        // Image Generation Function
-        async function handleImageGeneration(e) {
-            e.preventDefault();
-            const imagePrompt = document.getElementById('imagePrompt').value;
-            const imageResult = document.getElementById('imageResult');
-            const generatedImage = document.getElementById('generatedImage');
-            const imageBtn = document.getElementById('imageBtn');
-
-            imageBtn.disabled = true;
-            imageBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span> กำลังสร้าง...</span>';
-            imageResult.innerHTML = '<div class="image-loading"><i class="fas fa-spinner fa-spin fa-2x"></i><p class="mt-2">กำลังสร้างภาพ...</p></div>';
-
-            const payload = {
-                instances: [{ prompt: imagePrompt }],
-                parameters: { "sampleCount": 1 }
-            };
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${API_KEY}`;
-            
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const result = await response.json();
-                const base64Data = result?.predictions?.[0]?.bytesBase64Encoded;
-
-                if (base64Data) {
-                    const imageUrl = `data:image/png;base64,${base64Data}`;
-                    generatedImage.src = imageUrl;
-                    generatedImage.alt = imagePrompt;
-                    imageResult.innerHTML = '';
-                    imageResult.appendChild(generatedImage);
+                if (text) {
+                    const dekFaoRanMessageDiv = document.createElement('div');
+                    dekFaoRanMessageDiv.className = 'message-bubble dek-fao-ran-message';
+                    dekFaoRanMessageDiv.textContent = text;
+                    chatBox.prepend(dekFaoRanMessageDiv);
+                    chatBox.scrollTop = chatBox.scrollHeight;
                 } else {
-                    imageResult.innerHTML = '<div class="image-loading text-red-400">เกิดข้อผิดพลาดในการสร้างภาพ</div>';
+                    const errorMessageDiv = document.createElement('div');
+                    errorMessageDiv.className = 'message-bubble dek-fao-ran-message text-red-400';
+                    errorMessageDiv.textContent = 'ขออภัย เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองอีกครั้งในภายหลัง';
+                    chatBox.prepend(errorMessageDiv);
                 }
-            } catch (error) {
-                console.error('Error generating image:', error);
-                imageResult.innerHTML = '<div class="image-loading text-red-400">เกิดข้อผิดพลาดในการสร้างภาพ</div>';
-            } finally {
-                imageBtn.disabled = false;
-                imageBtn.innerHTML = '<i class="fas fa-palette"></i><span>สร้างภาพ</span>';
-            }
-        }
-        
-        // --- Hashtag Generator ---
-        async function loadHashtags() {
-            const hashtagContainer = document.getElementById('hashtag-container');
-            const hashtagLoading = document.getElementById('hashtag-loading');
-            const copyHashtagsBtn = document.getElementById('copyHashtagsBtn');
-
-            hashtagLoading.classList.remove('hidden');
-            copyHashtagsBtn.classList.add('hidden');
-
-            const prompt = `Generate a comprehensive list of Thai hashtags related to digital services, academic work, and online business. Categorize them into relevant groups like "Academic", "Technology", "Online Business", "General". The response should be a JSON object with keys as categories and values as arrays of strings (hashtags).`;
-            
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: {
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "OBJECT",
-                        properties: {
-                            "Academic": { type: "ARRAY", items: { type: "STRING" } },
-                            "Technology": { type: "ARRAY", items: { type: "STRING" } },
-                            "Online Business": { type: "ARRAY", items: { type: "STRING" } },
-                            "General": { type: "ARRAY", items: { type: "STRING" } }
-                        }
-                    }
-                }
-            };
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
-            
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                
-                const result = await response.json();
-                const jsonText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (!jsonText) throw new Error("No JSON content in response.");
-
-                const hashtags = JSON.parse(jsonText);
-                renderHashtags(hashtags);
 
             } catch (error) {
-                console.error('Error generating hashtags:', error);
-                hashtagContainer.innerHTML = '<p class="text-red-400">เกิดข้อผิดพลาดในการโหลดแฮชแท็ก กรุณาลองใหม่อีกครั้ง</p>';
+                console.error('Error with API call:', error);
+                loadingDiv.remove();
+                const errorMessageDiv = document.createElement('div');
+                errorMessageDiv.className = 'message-bubble dek-fao-ran-message text-red-400';
+                errorMessageDiv.textContent = 'ขออภัย เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองอีกครั้งในภายหลัง';
+                chatBox.prepend(errorMessageDiv);
             } finally {
-                hashtagLoading.classList.add('hidden');
-                copyHashtagsBtn.classList.remove('hidden');
-            }
-        }
-        
-        function renderHashtags(data) {
-            const hashtagContainer = document.getElementById('hashtag-container');
-            hashtagContainer.innerHTML = '';
-            for (const category in data) {
-                if (data.hasOwnProperty(category)) {
-                    const card = document.createElement('div');
-                    card.className = 'hashtag-card';
-                    card.innerHTML = `<h3 class="text-lg font-semibold mb-2 text-accent-teal">${category}</h3>`;
-                    
-                    data[category].forEach(hashtag => {
-                        const item = document.createElement('span');
-                        item.className = 'hashtag-item';
-                        item.textContent = hashtag;
-                        item.addEventListener('click', () => {
-                            item.classList.toggle('selected');
-                        });
-                        card.appendChild(item);
-                    });
-                    hashtagContainer.appendChild(card);
-                }
+                chatInput.disabled = false;
+                chatSendBtn.disabled = false;
+                chatInput.focus();
             }
         }
 
-        function copyHashtags() {
-            const selectedHashtags = document.querySelectorAll('.hashtag-item.selected');
-            const hashtagText = Array.from(selectedHashtags).map(item => item.textContent).join(' ');
-            const copyStatus = document.getElementById('copyStatus');
-
-            if (hashtagText) {
-                navigator.clipboard.writeText(hashtagText).then(() => {
-                    copyStatus.textContent = 'คัดลอกสำเร็จแล้ว!';
-                }).catch(err => {
-                    console.error('Failed to copy hashtags:', err);
-                    copyStatus.textContent = 'ไม่สามารถคัดลอกได้';
-                });
-            } else {
-                copyStatus.textContent = 'กรุณาเลือกแฮชแท็กก่อน';
-            }
-
-            setTimeout(() => {
-                copyStatus.textContent = '';
-            }, 3000);
-        }
-
-
-        // --- General and Firebase Setup ---
-
+        // --- Event Listeners and Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Check for Firebase config and initialize
+            // Firebase setup
             if (Object.keys(firebaseConfig).length > 0) {
-                // Initialize Firebase
                 app = firebase.initializeApp(firebaseConfig);
                 db = firebase.getFirestore(app);
                 auth = firebase.getAuth(app);
-                
-                // Set Firestore logging to debug mode
-                firebase.setLogLevel('Debug');
+                firebase.setLogLevel('debug'); // For debugging
 
-                // Sign in with custom token or anonymously
                 firebase.onAuthStateChanged(auth, async (user) => {
-                    if (!user) {
+                    if (user) {
+                        userId = user.uid;
+                        console.log("User signed in with UID:", userId);
+                        listenForReviews(); // Start listening for reviews after auth
+                    } else {
+                        // Sign in anonymously if no user is authenticated
                         try {
-                            if (typeof __initial_auth_token !== 'undefined') {
-                                await firebase.signInWithCustomToken(auth, __initial_auth_token);
+                            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                            if (initialAuthToken) {
+                                await firebase.signInWithCustomToken(auth, initialAuthToken);
                             } else {
                                 await firebase.signInAnonymously(auth);
                             }
+                            console.log("Signed in anonymously or with custom token.");
                         } catch (error) {
-                            console.error('Firebase Auth Error:', error);
+                            console.error("Error during authentication:", error);
                         }
                     }
-                    userId = auth.currentUser?.uid || 'anonymous';
-                    console.log('User ID:', userId);
-                    listenForReviews();
                 });
             } else {
-                console.error('Firebase config not found. Firestore services will not be active.');
-                document.getElementById('reviewsContainer').innerHTML = '<p class="text-red-400">Firebase ไม่ได้ถูกกำหนดค่าไว้ ส่วนรีวิวจะไม่ทำงาน</p>';
-            }
-            
-            // Auto-scroll functionality for a dynamic look
-            function autoScroll() {
-                const body = document.body;
-                let currentScroll = body.scrollTop;
-                const scrollHeight = body.scrollHeight - window.innerHeight;
-
-                if (!isAutoScrollActive) return;
-
-                if (currentScroll >= scrollHeight) {
-                    if (!isAtEnd) {
-                        isAtEnd = true;
-                        endScrollTimer = setTimeout(() => {
-                            isAtEnd = false;
-                            body.scrollTop = 0;
-                        }, 2000); // Wait 2 seconds at the end before resetting
-                    }
-                } else {
-                    body.scrollTop += 1;
-                    isAtEnd = false;
-                    clearTimeout(endScrollTimer);
-                }
-                animationFrameId = requestAnimationFrame(autoScroll);
+                console.error("Firebase config is missing.");
+                // Fallback for when Firebase isn't available in the environment
+                document.getElementById('reviewForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    showStatus('reviewStatus', 'Firebase ไม่พร้อมใช้งาน' , false);
+                });
             }
 
-            function stopAutoScroll() {
-                isAutoScrollActive = false;
-                if (animationFrameId) {
-                    cancelAnimationFrame(animationFrameId);
-                }
-            }
-
-            window.addEventListener('scroll', () => {
-                stopAutoScroll();
-            });
-
-            // Start auto-scroll after a short delay
-            setTimeout(() => {
-                isAutoScrollActive = true;
-                autoScroll();
-            }, 1000);
-
-            // Add event listeners for navigation
+            // Scroll to section on navigation button click
             document.querySelectorAll('.nav-button').forEach(button => {
                 button.addEventListener('click', (e) => {
                     e.preventDefault();
-                    const targetId = button.getAttribute('data-target-id');
+                    const targetId = e.currentTarget.getAttribute('data-target-id');
                     const targetSection = document.getElementById(targetId);
                     if (targetSection) {
                         targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        // Add a subtle class to highlight the section
+                        targetSection.classList.add('ring-2', 'ring-teal-500', 'ring-offset-4', 'ring-offset-dark-container');
+                        setTimeout(() => {
+                            targetSection.classList.remove('ring-2', 'ring-teal-500', 'ring-offset-4', 'ring-offset-dark-container');
+                        }, 2000);
                     }
                 });
             });
 
-            // Event Listeners for the เด็กเฝ้าร้าน section
+            // Review form submission handler
+            document.getElementById('reviewForm').addEventListener('submit', handleReviewSubmission);
+
+            // Floating chat button functionality
+            const floatingChatButton = document.getElementById('floating-chat-button');
+            const chatModalOverlay = document.getElementById('chat-modal-overlay');
+            const chatCloseButton = document.getElementById('chat-close-button');
             const chatForm = document.getElementById('chatForm');
-            if (chatForm) {
-                chatForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const prompt = document.getElementById('chatInput').value;
-                    if (prompt) {
-                        sendChatPrompt(prompt);
-                    }
-                });
-            }
+            const chatInput = document.getElementById('chatInput');
 
-            const priceForm = document.getElementById('priceForm');
-            if (priceForm) {
-                priceForm.addEventListener('submit', handlePriceCalculation);
-            }
+            floatingChatButton.addEventListener('click', () => {
+                chatModalOverlay.classList.add('active');
+            });
 
-            const imageForm = document.getElementById('imageForm');
-            if (imageForm) {
-                imageForm.addEventListener('submit', handleImageGeneration);
-            }
+            chatCloseButton.addEventListener('click', () => {
+                chatModalOverlay.classList.remove('active');
+            });
 
-            // Event Listeners for Review and Hashtag sections
-            const reviewForm = document.getElementById('reviewForm');
-            if (reviewForm) {
-                reviewForm.addEventListener('submit', handleReviewSubmission);
-            }
+            chatModalOverlay.addEventListener('click', (e) => {
+                if (e.target.id === 'chat-modal-overlay') {
+                    chatModalOverlay.classList.remove('active');
+                }
+            });
+
+            // Handle chat message submission
+            chatForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const prompt = chatInput.value.trim();
+                if (prompt) {
+                    sendChatPrompt(prompt);
+                }
+            });
             
+            // --- Hashtag Generator Logic ---
+            const hashtagData = {
+                "งานวิชาการ": [
+                    "#รับทำรายงาน", "#รับเขียนงานวิจัย", "#งานวิชาการ", "#โครงงานนักศึกษา", "#ติวเตอร์ออนไลน์",
+                    "#แก้ปัญหาการบ้าน", "#ช่วยทำรายงาน", "#รายงานด่วน"
+                ],
+                "งานเขียน": [
+                    "#รับเขียนบทความ", "#คอนเทนต์", "#บทความการตลาด", "#เขียนบล็อก", "#รับเขียนทุกประเภท"
+                ],
+                "งานเทคโนโลยี": [
+                    "#รับเขียนโปรแกรม", "#พัฒนาเว็บไซต์", "#ทำแอปพลิเคชัน", "#งานโปรแกรมมิ่ง", "#เขียนโค้ด",
+                    "#AppSheet", "#AppScript", "#WebDesign"
+                ],
+                "บริการทั่วไป": [
+                    "#รับทำพรีเซนต์", "#งานนำเสนอ", "#งานเร่งงานด่วน", "#รับทำทุกอย่าง", "#KantKlaoShop",
+                    "#แก้ปัญหางาน"
+                ]
+            };
+            
+            const hashtagContainer = document.getElementById('hashtag-container');
+            const hashtagLoading = document.getElementById('hashtag-loading');
             const copyHashtagsBtn = document.getElementById('copyHashtagsBtn');
-            if (copyHashtagsBtn) {
-                copyHashtagsBtn.addEventListener('click', copyHashtags);
+            const copyStatus = document.getElementById('copyStatus');
+            let selectedHashtags = new Set();
+            
+            // Function to render hashtags
+            function renderHashtags() {
+                hashtagLoading.classList.add('hidden');
+                copyHashtagsBtn.classList.remove('hidden');
+                
+                for (const category in hashtagData) {
+                    const categoryDiv = document.createElement('div');
+                    categoryDiv.className = 'text-left';
+                    categoryDiv.innerHTML = `<h3 class="text-xl font-semibold mb-2 text-teal-400">${category}</h3>`;
+                    
+                    const tagsDiv = document.createElement('div');
+                    tagsDiv.className = 'flex flex-wrap gap-2';
+                    
+                    hashtagData[category].forEach(tag => {
+                        const tagButton = document.createElement('button');
+                        tagButton.className = 'bg-dark-input px-3 py-1 rounded-full text-sm hover:bg-teal-500 hover:text-white transition-colors duration-200';
+                        tagButton.textContent = tag;
+                        tagButton.addEventListener('click', () => {
+                            if (selectedHashtags.has(tag)) {
+                                selectedHashtags.delete(tag);
+                                tagButton.classList.remove('bg-teal-500', 'text-white');
+                                tagButton.classList.add('bg-dark-input', 'text-gray-200');
+                            } else {
+                                selectedHashtags.add(tag);
+                                tagButton.classList.add('bg-teal-500', 'text-white');
+                                tagButton.classList.remove('bg-dark-input', 'text-gray-200');
+                            }
+                        });
+                        tagsDiv.appendChild(tagButton);
+                    });
+                    
+                    categoryDiv.appendChild(tagsDiv);
+                    hashtagContainer.appendChild(categoryDiv);
+                }
             }
             
-            // Load hashtags on page load
-            loadHashtags();
-        });
+            // Function to copy selected hashtags to clipboard
+            copyHashtagsBtn.addEventListener('click', () => {
+                if (selectedHashtags.size === 0) {
+                    copyStatus.textContent = 'กรุณาเลือกแฮชแท็กอย่างน้อยหนึ่งรายการ';
+                    copyStatus.className = 'mt-4 text-sm font-medium text-center text-red-400';
+                    return;
+                }
+                
+                const textToCopy = Array.from(selectedHashtags).join(' ');
+                
+                // Using clipboard API (or a fallback)
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(textToCopy)
+                        .then(() => {
+                            copyStatus.textContent = 'คัดลอกแฮชแท็กเรียบร้อยแล้ว!';
+                            copyStatus.className = 'mt-4 text-sm font-medium text-center text-green-400';
+                        })
+                        .catch(err => {
+                            fallbackCopyTextToClipboard(textToCopy);
+                        });
+                } else {
+                    fallbackCopyTextToClipboard(textToCopy);
+                }
+            });
 
+            function fallbackCopyTextToClipboard(text) {
+                const textarea = document.createElement("textarea");
+                textarea.value = text;
+                textarea.style.position = "fixed"; 
+                textarea.style.opacity = "0"; 
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    copyStatus.textContent = 'คัดลอกแฮชแท็กเรียบร้อยแล้ว!';
+                    copyStatus.className = 'mt-4 text-sm font-medium text-center text-green-400';
+                } catch (err) {
+                    copyStatus.textContent = 'ไม่สามารถคัดลอกได้: ' + err;
+                    copyStatus.className = 'mt-4 text-sm font-medium text-center text-red-400';
+                }
+                document.body.removeChild(textarea);
+            }
+            
+            renderHashtags();
+        });
     </script>
 </body>
 </html>
