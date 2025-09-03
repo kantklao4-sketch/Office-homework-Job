@@ -9,8 +9,11 @@
     <!-- These tags control how your page looks when shared on Facebook and other platforms. -->
     <meta property="og:title" content="Kant Klao Shop">
     <meta property="og:description" content="รับทำรายงาน, งานวิจัย, เขียนบทความ และพัฒนาเว็บไซต์สำหรับนักเรียนนักศึกษาและบุคคลทั่วไป">
-    <meta property="og:image" content="https://www.yourwebsite.com/office-homework-og-image.png">
-    <meta property="og:url" content="https://www.yourwebsite.com/index.html">
+    <!-- แก้ไข: เปลี่ยน og:image จาก URL placeholder เป็น URL รูปภาพที่ใช้งานได้จริง -->
+    <!-- กรุณาแทนที่ URL ด้านล่างด้วย URL รูปภาพของคุณเองเพื่อให้การแชร์ทำงานได้อย่างสมบูรณ์ -->
+    <meta property="og:image" content="https://placehold.co/1200x630/48BB78/e2e8f0?text=Kant+Klao+Shop">
+    <!-- แก้ไข: เปลี่ยน og:url จาก URL placeholder เป็น URL ของเว็บไซต์จริง -->
+    <meta property="og:url" content="https://kantklao4-sketch.github.io/Office-homework-Job/">
     <meta property="og:type" content="website">
 
     <!-- Tailwind CSS -->
@@ -668,98 +671,182 @@
             }
         }
 
+        // --- Review Board Firestore Listener ---
         function setupReviewListener() {
-            if (!db) return;
-            const reviewsColRef = firebase.collection(db, `artifacts/${appId}/public/data/reviews`);
-            const reviewsQuery = firebase.query(reviewsColRef); // แก้ไข: ลบ orderBy ออก
-
-            const reviewsContainer = document.getElementById('reviewsContainer');
-            
-            firebase.onSnapshot(reviewsQuery, (querySnapshot) => {
-                const reviews = [];
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    if (data.timestamp) {
-                        // เก็บข้อมูลรีวิวและ timestamp ในรูปแบบที่เหมาะสมเพื่อการเรียงลำดับ
-                        reviews.push({
-                            id: doc.id,
-                            ...data,
-                            timestamp: data.timestamp.toMillis() // แปลง timestamp เป็นมิลลิวินาที
-                        });
-                    }
+            try {
+                if (!db) {
+                    console.error("Firestore instance not available.");
+                    return;
+                }
+                const reviewsContainer = document.getElementById('reviewsContainer');
+                const reviewsColRef = firebase.collection(db, `artifacts/${appId}/public/data/reviews`);
+                
+                // ใช้ onSnapshot เพื่อฟังการเปลี่ยนแปลงของข้อมูลแบบ real-time
+                firebase.onSnapshot(reviewsColRef, (snapshot) => {
+                    reviewsContainer.innerHTML = ''; // Clear existing reviews
+                    const reviews = [];
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        reviews.push({ id: doc.id, ...data });
+                    });
+                    
+                    // Sorting locally by timestamp
+                    reviews.sort((a, b) => b.timestamp - a.timestamp); // Newest first
+                    
+                    reviews.forEach(review => renderReviewCard(review));
+                }, (error) => {
+                    console.error("Error listening to reviews: ", error);
                 });
-
-                // เรียงลำดับรีวิวในหน่วยความจำ (in-memory sort)
-                reviews.sort((a, b) => b.timestamp - a.timestamp);
-
-                // เคลียร์รีวิวเก่าทั้งหมดก่อนที่จะแสดงรีวิวใหม่ที่เรียงลำดับแล้ว
-                reviewsContainer.innerHTML = '';
-                reviews.forEach(review => renderReviewCard(review));
-            }, (error) => {
-                console.error("Error getting reviews: ", error);
-            });
+            } catch (error) {
+                console.error("Failed to set up review listener:", error);
+            }
         }
         
-        // Event listeners
+        // --- Hashtag and Navigation Logic ---
         document.addEventListener('DOMContentLoaded', () => {
             initFirebase();
-            document.getElementById('reviewForm').addEventListener('submit', handleReviewSubmission);
-        });
+            
+            // Navigation button smooth scrolling
+            document.querySelectorAll('.nav-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = e.currentTarget.getAttribute('data-target-id');
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
 
-        document.querySelectorAll('.nav-button').forEach(button => {
-            button.addEventListener('click', () => {
-                const targetId = button.getAttribute('data-target-id');
-                const targetSection = document.getElementById(targetId);
-                if (targetSection) {
-                    targetSection.scrollIntoView({ behavior: 'smooth' });
+            // Review form submission handler
+            const reviewForm = document.getElementById('reviewForm');
+            if (reviewForm) {
+                reviewForm.addEventListener('submit', handleReviewSubmission);
+            }
+            
+            // Hashtag selection logic
+            const hashtagContainer = document.getElementById('hashtag-container');
+            if (hashtagContainer) {
+                hashtagContainer.addEventListener('click', (e) => {
+                    const target = e.target;
+                    if (target.classList.contains('hashtag-item')) {
+                        target.classList.toggle('selected');
+                    }
+                });
+            }
+            
+            // Copy hashtags to clipboard
+            const copyHashtagsBtn = document.getElementById('copyHashtagsBtn');
+            if (copyHashtagsBtn) {
+                copyHashtagsBtn.addEventListener('click', () => {
+                    const selectedHashtags = document.querySelectorAll('.hashtag-item.selected');
+                    const textToCopy = Array.from(selectedHashtags).map(tag => tag.textContent).join(' ');
+                    
+                    if (textToCopy) {
+                        // Use the older, more compatible copy method for iframes
+                        const tempInput = document.createElement('textarea');
+                        tempInput.value = textToCopy;
+                        document.body.appendChild(tempInput);
+                        tempInput.select();
+                        try {
+                            const success = document.execCommand('copy');
+                            if (success) {
+                                showStatus('copyStatus', 'คัดลอกแฮชแท็กแล้ว!', true);
+                                // Clear selection after a delay
+                                setTimeout(() => {
+                                    document.querySelectorAll('.hashtag-item.selected').forEach(tag => tag.classList.remove('selected'));
+                                    showStatus('copyStatus', '', true);
+                                }, 2000);
+                            } else {
+                                throw new Error('Failed to copy command');
+                            }
+                        } catch (err) {
+                            console.error('Copy to clipboard failed:', err);
+                            showStatus('copyStatus', 'ไม่สามารถคัดลอกได้', false);
+                        } finally {
+                            document.body.removeChild(tempInput);
+                        }
+                    } else {
+                        showStatus('copyStatus', 'กรุณาเลือกแฮชแท็กอย่างน้อยหนึ่งอัน', false);
+                    }
+                });
+            }
+            
+            // Chat modal logic
+            const floatingChatButton = document.getElementById('floating-chat-button');
+            const chatModalOverlay = document.getElementById('chat-modal-overlay');
+            const chatCloseButton = document.getElementById('chat-close-button');
+            const chatForm = document.getElementById('chatForm');
+            const chatInput = document.getElementById('chatInput');
+            const chatBox = document.getElementById('chat-box');
+
+            floatingChatButton.addEventListener('click', () => {
+                chatModalOverlay.classList.add('active');
+            });
+
+            chatCloseButton.addEventListener('click', () => {
+                chatModalOverlay.classList.remove('active');
+            });
+
+            chatModalOverlay.addEventListener('click', (e) => {
+                if (e.target === chatModalOverlay) {
+                    chatModalOverlay.classList.remove('active');
                 }
             });
-        });
 
-        // Hashtag selection logic
-        const hashtagContainer = document.getElementById('hashtag-container');
-        let selectedHashtags = new Set();
+            chatForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const userMessage = chatInput.value.trim();
+                if (userMessage) {
+                    appendMessage(userMessage, 'user');
+                    chatInput.value = '';
+                    fetchBotResponse(userMessage);
+                }
+            });
 
-        hashtagContainer.addEventListener('click', (event) => {
-            const target = event.target;
-            if (target.classList.contains('hashtag-item')) {
-                const hashtagText = target.textContent.trim();
-                if (selectedHashtags.has(hashtagText)) {
-                    selectedHashtags.delete(hashtagText);
-                    target.classList.remove('selected');
-                } else {
-                    selectedHashtags.add(hashtagText);
-                    target.classList.add('selected');
+            function appendMessage(text, sender) {
+                const messageElement = document.createElement('div');
+                messageElement.textContent = text;
+                messageElement.className = `message-bubble ${sender === 'user' ? 'user-message' : 'dek-fao-ran-message'}`;
+                chatBox.prepend(messageElement);
+            }
+
+            async function fetchBotResponse(prompt) {
+                appendMessage("กำลังพิมพ์...", 'dek-fao-ran');
+                try {
+                    const response = await fetch(APP_SCRIPT_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ prompt: prompt }),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+
+                    const data = await response.json();
+                    const botResponse = data.response;
+                    const messages = Array.from(chatBox.querySelectorAll('.message-bubble'));
+                    const lastMessage = messages[0];
+                    if (lastMessage && lastMessage.textContent === "กำลังพิมพ์...") {
+                        lastMessage.remove();
+                    }
+                    appendMessage(botResponse, 'dek-fao-ran');
+
+                } catch (error) {
+                    console.error('Error fetching bot response:', error);
+                    const messages = Array.from(chatBox.querySelectorAll('.message-bubble'));
+                    const lastMessage = messages[0];
+                    if (lastMessage && lastMessage.textContent === "กำลังพิมพ์...") {
+                        lastMessage.remove();
+                    }
+                    appendMessage("ขออภัยค่ะ, มีข้อผิดพลาดเกิดขึ้น", 'dek-fao-ran');
                 }
             }
         });
 
-        document.getElementById('copyHashtagsBtn').addEventListener('click', () => {
-            if (selectedHashtags.size === 0) {
-                showStatus('copyStatus', 'กรุณาเลือกแฮชแท็กอย่างน้อยหนึ่งรายการก่อน', false);
-                return;
-            }
-
-            const hashtagsToCopy = Array.from(selectedHashtags).join(' ');
-            
-            // Use fallback method for copying to clipboard
-            const tempInput = document.createElement('textarea');
-            tempInput.value = hashtagsToCopy;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            
-            try {
-                document.execCommand('copy');
-                showStatus('copyStatus', 'คัดลอกแฮชแท็กสำเร็จ!', true);
-            } catch (err) {
-                showStatus('copyStatus', 'ไม่สามารถคัดลอกได้: ' + err, false);
-            } finally {
-                document.body.removeChild(tempInput);
-                // Clear selection
-                selectedHashtags.clear();
-                document.querySelectorAll('.hashtag-item').forEach(el => el.classList.remove('selected'));
-            }
-        });
     </script>
 </body>
 </html>
