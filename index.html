@@ -222,6 +222,13 @@
             right: 1rem;
         }
         
+        /* Hashtag styles */
+        .hashtag-item {
+            @apply bg-gray-700 text-gray-200 px-3 py-1 rounded-full cursor-pointer transition-colors duration-200 hover:bg-teal-600;
+        }
+        .hashtag-item.selected {
+            @apply bg-teal-500 text-white font-semibold;
+        }
     </style>
 </head>
 <body class="text-gray-200">
@@ -344,14 +351,14 @@
             <div class="flex justify-center">
                 <!-- Step 3: Facebook Page Plugin code goes here -->
                 <div class="fb-page" 
-                     data-href="https://www.facebook.com/rab.thakar.ban.rayngan.rab.tha.kickrrm.p" 
-                     data-tabs="timeline" 
-                     data-width="" 
-                     data-height="" 
-                     data-small-header="false" 
-                     data-adapt-container-width="true" 
-                     data-hide-cover="false" 
-                     data-show-facepile="true">
+                    data-href="https://www.facebook.com/rab.thakar.ban.rayngan.rab.tha.kickrrm.p" 
+                    data-tabs="timeline" 
+                    data-width="" 
+                    data-height="" 
+                    data-small-header="false" 
+                    data-adapt-container-width="true" 
+                    data-hide-cover="false" 
+                    data-show-facepile="true">
                     <blockquote cite="https://www.facebook.com/rab.thakar.ban.rayngan.rab.tha.kickrrm.p" class="fb-xfbml-parse-ignore">
                         <a href="https://www.facebook.com/rab.thakar.ban.rayngan.rab.tha.kickrrm.p">Kant Klao Shop</a>
                     </blockquote>
@@ -420,24 +427,53 @@
             <div id="reviewStatus" class="mt-4 text-lg font-medium text-center"></div>
         </div>
         
-        <!-- NEW HASHTAGS SECTION -->
-        <div id="hashtag-section" class="text-center mt-16 py-10 rounded-2xl bg-dark-container border border-[#3c4a5c]">
+        <!-- STATIC HASHTAGS SECTION -->
+        <div id="static-hashtags-section" class="text-center mt-16 py-10 rounded-2xl bg-dark-container border border-[#3c4a5c]">
             <h2 class="text-2xl font-semibold mb-2">แฮชแท็กที่เกี่ยวข้อง</h2>
             <p class="text-gray-400 mb-8">คลิกที่แฮชแท็กเพื่อเลือก จากนั้นกดปุ่มคัดลอกด้านล่างเพื่อนำไปใช้งาน</p>
             
-            <!-- Loading Spinner -->
-            <div id="hashtag-loading" class="text-light-gray">
-                <i class="fas fa-spinner fa-spin fa-2x"></i>
-                <p class="mt-2">กำลังจัดหมวดหมู่แฮชแท็ก...</p>
+            <div class="flex flex-wrap justify-center gap-2 px-4" id="hashtag-container">
+                <span class="hashtag-item">#KantKlaoShop</span>
+                <span class="hashtag-item">#รับทำรายงาน</span>
+                <span class="hashtag-item">#รับเขียนบทความ</span>
+                <span class="hashtag-item">#บริการเขียนบทความ</span>
+                <span class="hashtag-item">#งานวิจัย</span>
+                <span class="hashtag-item">#งานวิชาการ</span>
+                <span class="hashtag-item">#รับทำการบ้าน</span>
+                <span class="hashtag-item">#ทำรายงานออนไลน์</span>
+                <span class="hashtag-item">#นักศึกษา</span>
+                <span class="hashtag-item">#รับทำPowerpoint</span>
+                <span class="hashtag-item">#บริการด้านการศึกษา</span>
+                <span class="hashtag-item">#รับเขียนคอนเทนต์</span>
+                <span class="hashtag-item">#รับทำเว็บ</span>
+                <span class="hashtag-item">#Coding</span>
+                <span class="hashtag-item">#โปรเจคจบ</span>
+                <span class="hashtag-item">#WebDevelopment</span>
+                <span class="hashtag-item">#AppSheet</span>
+                <span class="hashtag-item">#เขียนโปรแกรม</span>
+                <span class="hashtag-item">#Freelance</span>
+                <span class="hashtag-item">#งานวิชาการเร่งด่วน</span>
+                <span class="hashtag-item">#การบ้านนักเรียน</span>
+                <span class="hashtag-item">#โครงงานปวช</span>
+                <span class="hashtag-item">#โครงงานปวส</span>
+                <span class="hashtag-item">#วิทยานิพนธ์</span>
+                <span class="hashtag-item">#บทความวิชาการ</span>
+                <span class="hashtag-item">#รับเขียนบล็อก</span>
+                <span class="hashtag-item">#รับเขียนรีวิว</span>
+                <span class="hashtag-item">#การตลาดออนไลน์</span>
+                <span class="hashtag-item">#งานเขียนโฆษณา</span>
+                <span class="hashtag-item">#เว็บไซต์สำเร็จรูป</span>
+                <span class="hashtag-item">#ออกแบบเว็บไซต์</span>
+                <span class="hashtag-item">#พัฒนาแอปพลิเคชัน</span>
+                <span class="hashtag-item">#ระบบฐานข้อมูล</span>
+                <span class="hashtag-item">#งานสถิติ</span>
+                <span class="hashtag-item">#รับสอนเขียนโค้ด</span>
+                <span class="hashtag-item">#จ้างงานออนไลน์</span>
+                <span class="hashtag-item">#DigitalService</span>
+                <span class="hashtag-item">#บริการครบวงจร</span>
             </div>
 
-            <!-- Hashtag Container -->
-            <div id="hashtag-container" class="space-y-6">
-                <!-- Categorized hashtags will be inserted here by JavaScript -->
-            </div>
-
-            <!-- Copy Button -->
-            <button id="copyHashtagsBtn" class="contact-button bg-purple-600 hover:bg-purple-700 mt-8 hidden">
+            <button id="copyHashtagsBtn" class="contact-button bg-purple-600 hover:bg-purple-700 mt-8">
                 <i class="fas fa-copy"></i>
                 <span>คัดลอกแฮชแท็กที่เลือก</span>
             </button>
@@ -494,8 +530,7 @@
         // **ใช้ตัวแปร __app_id ที่กำหนดไว้โดย Canvas เพื่อระบุแอปพลิเคชัน**
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const API_KEY = ""; // Leave this empty, it will be provided in the runtime
-
+        
         // Function to display a status message
         function showStatus(elementId, message, isSuccess = true) {
             const statusDiv = document.getElementById(elementId);
@@ -675,207 +710,133 @@
             });
         }
         
-        // --- Hashtag Generator and Copy Logic ---
-        async function fetchAndRenderHashtags() {
-            const hashtagLoading = document.getElementById('hashtag-loading');
+        // --- Static Hashtag & Copy Logic ---
+        function setupStaticHashtagLogic() {
             const hashtagContainer = document.getElementById('hashtag-container');
             const copyHashtagsBtn = document.getElementById('copyHashtagsBtn');
-            
-            hashtagLoading.classList.remove('hidden');
-            hashtagContainer.innerHTML = '';
-            copyHashtagsBtn.classList.add('hidden');
+            const copyStatus = document.getElementById('copyStatus');
+            const selectedHashtags = new Set();
 
-            try {
-                const systemPrompt = "คุณคือผู้ช่วยด้านการตลาดที่เชี่ยวชาญด้านธุรกิจดิจิทัลและงานบริการสำหรับนักศึกษา โปรดสร้างรายการแฮชแท็กภาษาไทยที่มีความเกี่ยวข้องกับคำว่า 'Kant Klao Shop' 'รับทำรายงาน' และ 'บริการเขียนบทความ' แบ่งกลุ่มแฮชแท็กตามหมวดหมู่และจัดให้ในรูปแบบ JSON ที่มี schema ที่กำหนด";
-                const userQuery = "สร้างแฮชแท็กสำหรับ Kant Klao Shop";
-                
-                const payload = {
-                    contents: [{ parts: [{ text: userQuery }] }],
-                    systemInstruction: { parts: [{ text: systemPrompt }] },
-                    generationConfig: {
-                        responseMimeType: "application/json",
-                        responseSchema: {
-                            type: "ARRAY",
-                            items: {
-                                type: "OBJECT",
-                                properties: {
-                                    "category": { "type": "STRING" },
-                                    "hashtags": { "type": "ARRAY", "items": { "type": "STRING" } }
-                                },
-                                "propertyOrdering": ["category", "hashtags"]
-                            }
-                        }
+            hashtagContainer.addEventListener('click', (e) => {
+                const target = e.target;
+                if (target.classList.contains('hashtag-item')) {
+                    const hashtag = target.textContent.trim();
+                    if (selectedHashtags.has(hashtag)) {
+                        selectedHashtags.delete(hashtag);
+                        target.classList.remove('selected');
+                    } else {
+                        selectedHashtags.add(hashtag);
+                        target.classList.add('selected');
                     }
-                };
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+                }
+            });
+
+            copyHashtagsBtn.addEventListener('click', async () => {
+                if (selectedHashtags.size === 0) {
+                    copyStatus.textContent = 'กรุณาเลือกแฮชแท็กอย่างน้อยหนึ่งอัน';
+                    copyStatus.className = 'mt-4 text-sm font-medium text-center text-red-400';
+                    return;
+                }
+
+                const hashtagsToCopy = Array.from(selectedHashtags).join(' ');
                 
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                try {
+                    // Use a temporary textarea for copying to clipboard
+                    const tempTextarea = document.createElement('textarea');
+                    tempTextarea.value = hashtagsToCopy;
+                    document.body.appendChild(tempTextarea);
+                    tempTextarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempTextarea);
+
+                    copyStatus.textContent = 'คัดลอกแฮชแท็กสำเร็จ!';
+                    copyStatus.className = 'mt-4 text-sm font-medium text-center text-green-400';
+                } catch (err) {
+                    console.error('Failed to copy text: ', err);
+                    copyStatus.textContent = 'ไม่สามารถคัดลอกได้: กรุณาลองด้วยตนเอง';
+                    copyStatus.className = 'mt-4 text-sm font-medium text-center text-red-400';
                 }
                 
-                const result = await response.json();
-                const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (!jsonText) {
-                    throw new Error("Invalid response format from API.");
+                setTimeout(() => {
+                    copyStatus.textContent = '';
+                }, 3000); // Clear status message after 3 seconds
+            });
+        }
+
+        // --- Chat Bot Logic ---
+        function setupChatBot() {
+            const chatOverlay = document.getElementById('chat-modal-overlay');
+            const chatButton = document.getElementById('floating-chat-button');
+            const chatCloseButton = document.getElementById('chat-close-button');
+            const chatBox = document.getElementById('chat-box');
+            const chatForm = document.getElementById('chatForm');
+            const chatInput = document.getElementById('chatInput');
+            const chatSendBtn = document.getElementById('chatSendBtn');
+
+            chatButton.addEventListener('click', () => {
+                chatOverlay.classList.add('active');
+                displayMessage("dek-fao-ran", "สวัสดีครับ Kant Klao Shop ยินดีให้บริการ มีอะไรให้ 'เด็กเฝ้าร้าน' ช่วยไหมครับ?");
+            });
+
+            chatCloseButton.addEventListener('click', () => {
+                chatOverlay.classList.remove('active');
+            });
+
+            chatOverlay.addEventListener('click', (e) => {
+                if (e.target.id === 'chat-modal-overlay') {
+                    chatOverlay.classList.remove('active');
                 }
+            });
+            
+            chatForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const userMessage = chatInput.value.trim();
+                if (userMessage === '') return;
+
+                displayMessage('user', userMessage);
+                chatInput.value = '';
                 
-                const data = JSON.parse(jsonText);
-                
-                hashtagLoading.classList.add('hidden');
-                copyHashtagsBtn.classList.remove('hidden');
-                
-                data.forEach(group => {
-                    const categoryDiv = document.createElement('div');
-                    categoryDiv.innerHTML = `<h3 class="text-xl font-semibold text-accent-teal mb-2">${group.category}</h3>`;
-                    
-                    const hashtagsDiv = document.createElement('div');
-                    hashtagsDiv.className = 'flex flex-wrap gap-2 justify-center';
-                    
-                    group.hashtags.forEach(tag => {
-                        const tagSpan = document.createElement('span');
-                        tagSpan.className = 'bg-gray-700 text-gray-200 text-sm py-1 px-3 rounded-full cursor-pointer hover:bg-teal-500 transition-colors duration-200 select-none';
-                        tagSpan.textContent = tag;
-                        tagSpan.dataset.tag = tag;
-                        tagSpan.addEventListener('click', () => {
-                            tagSpan.classList.toggle('bg-teal-500');
-                            tagSpan.classList.toggle('bg-gray-700');
-                        });
-                        hashtagsDiv.appendChild(tagSpan);
+                chatSendBtn.disabled = true;
+                chatSendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                try {
+                    const response = await fetch(APP_SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ message: userMessage })
                     });
                     
-                    categoryDiv.appendChild(hashtagsDiv);
-                    hashtagContainer.appendChild(categoryDiv);
-                });
-            } catch (error) {
-                console.error("Error generating hashtags:", error);
-                hashtagLoading.innerHTML = `<p class="mt-2 text-red-400">เกิดข้อผิดพลาดในการโหลดแฮชแท็ก. โปรดลองใหม่อีกครั้ง</p>`;
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    displayMessage('dek-fao-ran', data.response);
+
+                } catch (error) {
+                    console.error('Fetch error:', error);
+                    displayMessage('dek-fao-ran', 'ขออภัยครับ เกิดข้อผิดพลาดในการเชื่อมต่อ โปรดลองใหม่อีกครั้ง');
+                } finally {
+                    chatSendBtn.disabled = false;
+                    chatSendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                }
+            });
+
+            function displayMessage(sender, message) {
+                const messageElement = document.createElement('div');
+                messageElement.className = `message-bubble ${sender === 'user' ? 'user-message' : 'dek-fao-ran-message'}`;
+                messageElement.textContent = message;
+                chatBox.prepend(messageElement);
             }
         }
         
-        function handleCopyHashtags() {
-            const selectedHashtags = document.querySelectorAll('#hashtag-container .bg-teal-500');
-            const hashtagsToCopy = Array.from(selectedHashtags).map(tag => tag.textContent).join(' ');
-            const copyStatus = document.getElementById('copyStatus');
-            
-            if (hashtagsToCopy.length > 0) {
-                try {
-                    // Use a temporary textarea to copy to clipboard
-                    const tempTextArea = document.createElement('textarea');
-                    tempTextArea.value = hashtagsToCopy;
-                    document.body.appendChild(tempTextArea);
-                    tempTextArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(tempTextArea);
-                    
-                    showStatus('copyStatus', 'คัดลอกแฮชแท็กเรียบร้อยแล้ว!' , true);
-                } catch (err) {
-                    console.error('Failed to copy hashtags:', err);
-                    showStatus('copyStatus', 'ไม่สามารถคัดลอกได้ โปรดลองคัดลอกด้วยตนเอง' , false);
-                }
-            } else {
-                showStatus('copyStatus', 'กรุณาเลือกแฮชแท็กก่อน' , false);
-            }
-        }
-
-        // --- Chatbot Logic ---
-        const floatingChatButton = document.getElementById('floating-chat-button');
-        const chatModalOverlay = document.getElementById('chat-modal-overlay');
-        const chatCloseButton = document.getElementById('chat-close-button');
-        const chatBox = document.getElementById('chat-box');
-        const chatForm = document.getElementById('chatForm');
-        const chatInput = document.getElementById('chatInput');
-        
-        let chatHistory = [];
-        
-        function appendMessage(sender, text) {
-            const messageElement = document.createElement('div');
-            messageElement.className = `message-bubble ${sender === 'user' ? 'user-message' : 'dek-fao-ran-message'}`;
-            messageElement.textContent = text;
-            chatBox.prepend(messageElement);
-        }
-
-        async function sendMessage(message) {
-            const prompt = message;
-            appendMessage('user', prompt);
-            chatInput.value = '';
-            
-            chatHistory.push({ role: 'user', parts: [{ text: prompt }] });
-            
-            const systemPrompt = "คุณคือผู้ช่วยแชทบอทของร้าน Kant Klao Shop ที่มีชื่อว่า 'เด็กเฝ้าร้าน' หน้าที่ของคุณคือตอบคำถามลูกค้าเกี่ยวกับบริการต่างๆ ของร้าน เช่น รับทำรายงาน, งานวิจัย, งานเขียนบทความ, พัฒนาเว็บและแอปพลิเคชัน, งานโปรแกรมมิ่ง และงาน Sheet/Excel คุณมีบุคลิกเป็นมิตร สุภาพ และพร้อมให้คำแนะนำเสมอ";
-
-            const payload = {
-                contents: chatHistory,
-                systemInstruction: {
-                    parts: [{ text: systemPrompt }]
-                }
-            };
-
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
-            
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const result = await response.json();
-                const botResponse = result.candidates?.[0]?.content?.parts?.[0]?.text || "ขออภัยค่ะ, มีข้อผิดพลาดเกิดขึ้น";
-                
-                appendMessage('bot', botResponse);
-                chatHistory.push({ role: 'model', parts: [{ text: botResponse }] });
-
-            } catch (error) {
-                console.error("Error fetching chat response:", error);
-                appendMessage('bot', "ขออภัยค่ะ, ไม่สามารถเชื่อมต่อกับบอทได้ในขณะนี้");
-            }
-        }
-        
-        // --- Event Listeners ---
-        document.addEventListener('DOMContentLoaded', () => {
+        // Main function to run everything on page load
+        window.onload = function() {
             initFirebase();
             setupNavigation();
-            fetchAndRenderHashtags();
-            
-            // Review form event listener
-            document.getElementById('reviewForm').addEventListener('submit', handleReviewSubmission);
-            
-            // Copy button event listener
-            document.getElementById('copyHashtagsBtn').addEventListener('click', handleCopyHashtags);
-            
-            // Chat modal event listeners
-            floatingChatButton.addEventListener('click', () => {
-                chatModalOverlay.classList.add('active');
-            });
-            
-            chatCloseButton.addEventListener('click', () => {
-                chatModalOverlay.classList.remove('active');
-            });
-            
-            chatModalOverlay.addEventListener('click', (e) => {
-                if (e.target.id === 'chat-modal-overlay') {
-                    chatModalOverlay.classList.remove('active');
-                }
-            });
-            
-            chatForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const message = chatInput.value.trim();
-                if (message) {
-                    sendMessage(message);
-                }
-            });
-        });
+            setupStaticHashtagLogic();
+            setupChatBot();
+        };
+
     </script>
 </body>
 </html>
