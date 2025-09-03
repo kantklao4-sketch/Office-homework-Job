@@ -334,6 +334,7 @@
                             <i class="fas fa-palette"></i>
                             <span>สร้างภาพ</span>
                         </button>
+                    </button>
                     </form>
                     <div id="imageResult" class="mt-4 w-full">
                         <img id="generatedImage" src="https://placehold.co/400x300/283544/b0c0d0?text=ภาพจะปรากฏที่นี่" alt="Generated Image" class="w-full rounded-xl">
@@ -666,356 +667,361 @@
             loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i><span>เด็กเฝ้าร้าน กำลังตอบ...</span>';
             chatBox.prepend(loadingDiv);
 
-            chatInput.disabled = true;
+            chatInput.value = '';
             chatSendBtn.disabled = true;
 
-            try {
-                const chatHistory = [{
-                    role: "user",
-                    parts: [{
-                        text: prompt
-                    }]
-                }];
-                const payload = {
-                    contents: chatHistory
-                };
+            const chatHistory = [{
+                role: 'user',
+                parts: [{ text: prompt }]
+            }];
 
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+            const payload = {
+                contents: chatHistory,
+                systemInstruction: {
+                    parts: [{ text: "You are 'เด็กเฝ้าร้าน' (Dek Fao Ran), a friendly and helpful shop assistant for Kant Klao Shop. You answer questions about the shop's services in a casual, polite, and helpful manner in Thai. Your services include academic writing (reports, articles, research), technology services (web/app development, spreadsheet/database management), and general writing (content, blogs). When asked about pricing, always state that the price is estimated and depends on the complexity of the work, and the user should contact the provided Line ID or phone number for an exact quote." }]
+                }
+            };
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+            
+            try {
                 const response = await fetch(apiUrl, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+                
                 const result = await response.json();
-                const aiResponse = result.candidates[0].content.parts[0].text;
-                
+                const responseText = result?.candidates?.[0]?.content?.parts?.[0]?.text || 'ขออภัยครับ ไม่สามารถให้คำตอบได้ในขณะนี้';
+
+                // Remove loading indicator
                 chatBox.removeChild(loadingDiv);
-                
-                const aiMessageDiv = document.createElement('div');
-                aiMessageDiv.className = 'message-bubble dek-fao-ran-message';
-                aiMessageDiv.textContent = aiResponse;
-                chatBox.prepend(aiMessageDiv);
-                
+
+                // Add assistant's message
+                const assistantMessageDiv = document.createElement('div');
+                assistantMessageDiv.className = 'message-bubble dek-fao-ran-message';
+                assistantMessageDiv.textContent = responseText;
+                chatBox.prepend(assistantMessageDiv);
+
             } catch (error) {
-                console.error("Error with เด็กเฝ้าร้าน chat:", error);
+                console.error('Error generating chat response:', error);
                 chatBox.removeChild(loadingDiv);
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'message-bubble dek-fao-ran-message';
-                errorDiv.textContent = 'ขออภัย เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง';
+                errorDiv.textContent = 'ขออภัยครับ เกิดข้อผิดพลาดในการเชื่อมต่อ';
                 chatBox.prepend(errorDiv);
             } finally {
-                chatInput.disabled = false;
                 chatSendBtn.disabled = false;
-                chatInput.value = '';
-                chatInput.focus();
             }
         }
-        
-        // เด็กเฝ้าร้าน Price Calculator Function
-        async function calculatePrice(type, details) {
-            const priceResultDiv = document.getElementById('priceResult');
+
+        // Price Calculator Function
+        async function handlePriceCalculation(e) {
+            e.preventDefault();
+            const priceResult = document.getElementById('priceResult');
+            const projectType = document.getElementById('projectType').value;
+            const projectDetails = document.getElementById('projectDetails').value;
             const priceBtn = document.getElementById('priceBtn');
-            priceResultDiv.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i><span>เด็กเฝ้าร้าน กำลังประเมินราคา...</span>';
+
             priceBtn.disabled = true;
+            priceBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span> กำลังประเมิน...</span>';
+            priceResult.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังประเมินราคาคร่าวๆ...';
+
+            const userQuery = `ฉันต้องการทราบราคาสำหรับงาน ${projectType} โดยมีรายละเอียดดังนี้: ${projectDetails} ช่วยประเมินราคาให้หน่อย`;
+            const systemPrompt = "คุณเป็นนักวิเคราะห์ราคาสำหรับ Kant Klao Shop ที่ให้บริการงานเขียนและงานเทคโนโลยี ตอบคำถามเกี่ยวกับการประเมินราคาในภาษาไทยอย่างเป็นกันเองและให้ข้อมูลที่ชัดเจน อ้างอิงถึงรายละเอียดงานที่ลูกค้าให้มาเสมอ และย้ำว่าราคาที่ให้เป็นเพียงการประเมินเบื้องต้นเท่านั้น พร้อมแนะนำให้ลูกค้าติดต่อเพื่อขอราคาที่แน่นอนผ่าน Line ID: doopra99 หรือโทรศัพท์ 080-1120371";
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                tools: [{ "google_search": {} }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
 
             try {
-                const prompt = `จากข้อมูลงาน: ประเภทงานคือ "${type}", รายละเอียดคือ "${details}" กรุณาประเมินราคาคร่าวๆ เป็นช่วงราคาในสกุลเงินบาท (THB) และบอกเหตุผลประกอบสั้นๆ โดยให้ตอบเป็นข้อความที่เข้าใจง่าย`;
-                const payload = {
-                    contents: [{
-                        parts: [{
-                            text: prompt
-                        }]
-                    }]
-                };
-
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-                const aiResponse = result.candidates[0].content.parts[0].text;
-                priceResultDiv.innerHTML = aiResponse;
-            } catch (error) {
-                console.error("Error with เด็กเฝ้าร้าน price calculation:", error);
-                priceResultDiv.innerHTML = 'ไม่สามารถประเมินราคาได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง หรือติดต่อทางร้านโดยตรง';
-            } finally {
-                priceBtn.disabled = false;
-            }
-        }
-        
-        // เด็กเฝ้าร้าน Image Generator Function
-        async function generateImage(prompt) {
-            const imageResultDiv = document.getElementById('imageResult');
-            const generatedImage = document.getElementById('generatedImage');
-            const imageBtn = document.getElementById('imageBtn');
-
-            imageResultDiv.innerHTML = '<div class="image-loading"><i class="fas fa-spinner fa-spin text-4xl"></i><p class="mt-4">เด็กเฝ้าร้าน กำลังสร้างภาพ...</p></div>';
-            imageBtn.disabled = true;
-
-            try {
-                const payload = {
-                    instances: {
-                        prompt: prompt
-                    },
-                    parameters: {
-                        "sampleCount": 1
-                    }
-                };
-
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${API_KEY}`;
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-                const base64Data = result?.predictions?.[0]?.bytesBase64Encoded;
-
-                if (base64Data) {
-                    const imageUrl = `data:image/png;base64,${base64Data}`;
-                    generatedImage.src = imageUrl;
-                    imageResultDiv.innerHTML = '';
-                    imageResultDiv.appendChild(generatedImage);
-                } else {
-                    imageResultDiv.innerHTML = '<div class="image-loading">ไม่สามารถสร้างภาพได้ โปรดลองอีกครั้ง</div>';
-                    console.error("Image generation failed:", result);
-                }
-
-            } catch (error) {
-                console.error("Error with เด็กเฝ้าร้าน image generation:", error);
-                imageResultDiv.innerHTML = '<div class="image-loading">เกิดข้อผิดพลาดในการสร้างภาพ</div>';
-            } finally {
-                imageBtn.disabled = false;
-            }
-        }
-        
-        // Hashtag Generator
-        async function generateHashtags() {
-            const hashtagLoadingDiv = document.getElementById('hashtag-loading');
-            const hashtagContainerDiv = document.getElementById('hashtag-container');
-            const copyButton = document.getElementById('copyHashtagsBtn');
-
-            hashtagLoadingDiv.style.display = 'block';
-            hashtagContainerDiv.innerHTML = '';
-            copyButton.style.display = 'none';
-
-            const userPrompt = "Generate 10 Thai hashtags for a digital service business offering academic, creative, and technical services. Categorize them into relevant groups like 'งานวิชาการ', 'งานเขียน', 'งานเทคโนโลยี', and 'บริการทั่วไป'. Respond in JSON format only with the schema: { 'categories': [{ 'title': string, 'hashtags': [string] }] }";
-            
-            try {
-                const payload = {
-                    contents: [{
-                        parts: [{
-                            text: userPrompt
-                        }]
-                    }],
-                    generationConfig: {
-                        responseMimeType: "application/json",
-                        responseSchema: {
-                            type: "OBJECT",
-                            properties: {
-                                "categories": {
-                                    type: "ARRAY",
-                                    items: {
-                                        type: "OBJECT",
-                                        properties: {
-                                            "title": { "type": "STRING" },
-                                            "hashtags": { "type": "ARRAY", "items": { "type": "STRING" } }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                };
-                
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
                 const result = await response.json();
-                const jsonText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                const data = JSON.parse(jsonText);
-                
-                if (data && data.categories) {
-                    data.categories.forEach(category => {
-                        const card = document.createElement('div');
-                        card.className = 'hashtag-card text-left';
-                        card.innerHTML = `<h4 class="font-semibold text-lg mb-2 text-white">${category.title}</h4>`;
-                        
-                        const tagsDiv = document.createElement('div');
-                        tagsDiv.className = 'flex flex-wrap gap-2';
-                        category.hashtags.forEach(tag => {
-                            const hashtagSpan = document.createElement('span');
-                            hashtagSpan.className = 'hashtag-item';
-                            hashtagSpan.textContent = tag;
-                            hashtagSpan.addEventListener('click', () => hashtagSpan.classList.toggle('selected'));
-                            tagsDiv.appendChild(hashtagSpan);
-                        });
-                        
-                        card.appendChild(tagsDiv);
-                        hashtagContainerDiv.appendChild(card);
-                    });
-                    copyButton.style.display = 'block';
+                const text = result?.candidates?.[0]?.content?.parts?.[0]?.text || 'ขออภัยครับ ไม่สามารถประเมินราคาได้ในขณะนี้ กรุณาติดต่อเราโดยตรง';
+                priceResult.textContent = text;
+            } catch (error) {
+                console.error('Error calculating price:', error);
+                priceResult.textContent = 'เกิดข้อผิดพลาดในการประเมินราคา กรุณาลองใหม่อีกครั้ง';
+            } finally {
+                priceBtn.disabled = false;
+                priceBtn.innerHTML = '<i class="fas fa-coins"></i><span>ประเมินราคา</span>';
+            }
+        }
+
+        // Image Generation Function
+        async function handleImageGeneration(e) {
+            e.preventDefault();
+            const imagePrompt = document.getElementById('imagePrompt').value;
+            const imageResult = document.getElementById('imageResult');
+            const generatedImage = document.getElementById('generatedImage');
+            const imageBtn = document.getElementById('imageBtn');
+
+            imageBtn.disabled = true;
+            imageBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span> กำลังสร้าง...</span>';
+            imageResult.innerHTML = '<div class="image-loading"><i class="fas fa-spinner fa-spin fa-2x"></i><p class="mt-2">กำลังสร้างภาพ...</p></div>';
+
+            const payload = {
+                instances: [{ prompt: imagePrompt }],
+                parameters: { "sampleCount": 1 }
+            };
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${API_KEY}`;
+            
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                const base64Data = result?.predictions?.[0]?.bytesBase64Encoded;
+
+                if (base64Data) {
+                    const imageUrl = `data:image/png;base64,${base64Data}`;
+                    generatedImage.src = imageUrl;
+                    generatedImage.alt = imagePrompt;
+                    imageResult.innerHTML = '';
+                    imageResult.appendChild(generatedImage);
+                } else {
+                    imageResult.innerHTML = '<div class="image-loading text-red-400">เกิดข้อผิดพลาดในการสร้างภาพ</div>';
                 }
             } catch (error) {
-                console.error("Error generating hashtags:", error);
-                hashtagContainerDiv.innerHTML = '<p class="text-red-600">ไม่สามารถสร้างแฮชแท็กได้ กรุณาลองใหม่อีกครั้ง</p>';
+                console.error('Error generating image:', error);
+                imageResult.innerHTML = '<div class="image-loading text-red-400">เกิดข้อผิดพลาดในการสร้างภาพ</div>';
             } finally {
-                hashtagLoadingDiv.style.display = 'none';
+                imageBtn.disabled = false;
+                imageBtn.innerHTML = '<i class="fas fa-palette"></i><span>สร้างภาพ</span>';
             }
         }
         
-        // --- Event Listeners ---
-        
-        // Initialize Firebase on window load and set up listeners
-        window.onload = async () => {
-            if (typeof firebaseConfig.apiKey !== 'undefined') {
-                try {
-                    firebase.setLogLevel('debug');
-                    app = firebase.initializeApp(firebaseConfig);
-                    auth = firebase.getAuth(app);
-                    db = firebase.getFirestore(app);
+        // --- Hashtag Generator ---
+        async function loadHashtags() {
+            const hashtagContainer = document.getElementById('hashtag-container');
+            const hashtagLoading = document.getElementById('hashtag-loading');
+            const copyHashtagsBtn = document.getElementById('copyHashtagsBtn');
 
-                    const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                    if (token) {
-                        await firebase.signInWithCustomToken(auth, token);
-                    } else {
-                        await firebase.signInAnonymously(auth);
-                    }
+            hashtagLoading.classList.remove('hidden');
+            copyHashtagsBtn.classList.add('hidden');
 
-                    firebase.onAuthStateChanged(auth, (user) => {
-                        if (user) {
-                            userId = user.uid;
-                            console.log("Firebase Auth State Changed. User ID:", userId);
-                            listenForReviews();
-                        } else {
-                            console.log("User signed out or not authenticated.");
-                            // Handle signed out state if needed
-                        }
-                    });
-
-                } catch (error) {
-                    console.error("Error initializing Firebase:", error);
-                }
-            } else {
-                console.error("Firebase config is missing. Services will not work.");
-            }
-        };
-
-        // Navigation scrolling
-        document.querySelectorAll('.nav-button').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const targetId = e.currentTarget.getAttribute('data-target-id');
-                const targetSection = document.getElementById(targetId);
-                if (targetSection) {
-                    targetSection.scrollIntoView({ behavior: 'smooth' });
-                }
-            });
-        });
-
-        // Chatbot Form Submission
-        document.getElementById('chatForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const input = document.getElementById('chatInput');
-            const prompt = input.value.trim();
-            if (prompt) {
-                sendChatPrompt(prompt);
-            }
-        });
-
-        // Price Form Submission
-        document.getElementById('priceForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const projectType = document.getElementById('projectType').value.trim();
-            const projectDetails = document.getElementById('projectDetails').value.trim();
-            if (projectType && projectDetails) {
-                calculatePrice(projectType, projectDetails);
-            }
-        });
-
-        // Image Form Submission
-        document.getElementById('imageForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const imagePrompt = document.getElementById('imagePrompt').value.trim();
-            if (imagePrompt) {
-                generateImage(imagePrompt);
-            }
-        });
-
-        // Upload Form Submission (Apps Script)
-        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const form = e.target;
-            const formData = new FormData(form);
-            const statusDiv = document.getElementById('uploadStatus');
-            const submitButton = document.getElementById('submitButton');
-
-            statusDiv.textContent = 'กำลังส่งข้อมูล...';
-            statusDiv.className = 'mt-4 text-lg font-medium text-center text-yellow-500';
-            submitButton.disabled = true;
-
-            try {
-                const response = await fetch(APP_SCRIPT_URL, {
-                    method: 'POST',
-                    body: formData,
-                });
-                const result = await response.json();
-                if (result.result === 'success') {
-                    showStatus('uploadStatus', 'ส่งข้อมูลสำเร็จแล้ว! ทางร้านจะติดต่อกลับโดยเร็วที่สุด', true);
-                    form.reset();
-                } else {
-                    showStatus('uploadStatus', 'เกิดข้อผิดพลาดในการส่งข้อมูล', false);
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showStatus('uploadStatus', 'เกิดข้อผิดพลาดในการส่งข้อมูล', false);
-            } finally {
-                submitButton.disabled = false;
-            }
-        });
-
-        // Review Form Submission (Firestore)
-        document.getElementById('reviewForm').addEventListener('submit', handleReviewSubmission);
-        
-        // Hashtag logic on load
-        document.addEventListener('DOMContentLoaded', () => {
-            generateHashtags();
-        });
-
-        // Copy Hashtags to Clipboard
-        document.getElementById('copyHashtagsBtn').addEventListener('click', () => {
-            const selectedHashtags = Array.from(document.querySelectorAll('.hashtag-item.selected'))
-                                        .map(el => el.textContent)
-                                        .join(' ');
+            const prompt = `Generate a comprehensive list of Thai hashtags related to digital services, academic work, and online business. Categorize them into relevant groups like "Academic", "Technology", "Online Business", "General". The response should be a JSON object with keys as categories and values as arrays of strings (hashtags).`;
             
-            const copyStatusDiv = document.getElementById('copyStatus');
-            if (selectedHashtags) {
-                navigator.clipboard.writeText(selectedHashtags).then(() => {
-                    copyStatusDiv.textContent = 'คัดลอกแฮชแท็กแล้ว!';
-                    copyStatusDiv.classList.remove('text-red-600');
-                    copyStatusDiv.classList.add('text-green-600');
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            "Academic": { type: "ARRAY", items: { type: "STRING" } },
+                            "Technology": { type: "ARRAY", items: { type: "STRING" } },
+                            "Online Business": { type: "ARRAY", items: { type: "STRING" } },
+                            "General": { type: "ARRAY", items: { type: "STRING" } }
+                        }
+                    }
+                }
+            };
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+            
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                const jsonText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!jsonText) throw new Error("No JSON content in response.");
+
+                const hashtags = JSON.parse(jsonText);
+                renderHashtags(hashtags);
+
+            } catch (error) {
+                console.error('Error generating hashtags:', error);
+                hashtagContainer.innerHTML = '<p class="text-red-400">เกิดข้อผิดพลาดในการโหลดแฮชแท็ก กรุณาลองใหม่อีกครั้ง</p>';
+            } finally {
+                hashtagLoading.classList.add('hidden');
+                copyHashtagsBtn.classList.remove('hidden');
+            }
+        }
+        
+        function renderHashtags(data) {
+            const hashtagContainer = document.getElementById('hashtag-container');
+            hashtagContainer.innerHTML = '';
+            for (const category in data) {
+                if (data.hasOwnProperty(category)) {
+                    const card = document.createElement('div');
+                    card.className = 'hashtag-card';
+                    card.innerHTML = `<h3 class="text-lg font-semibold mb-2 text-accent-teal">${category}</h3>`;
+                    
+                    data[category].forEach(hashtag => {
+                        const item = document.createElement('span');
+                        item.className = 'hashtag-item';
+                        item.textContent = hashtag;
+                        item.addEventListener('click', () => {
+                            item.classList.toggle('selected');
+                        });
+                        card.appendChild(item);
+                    });
+                    hashtagContainer.appendChild(card);
+                }
+            }
+        }
+
+        function copyHashtags() {
+            const selectedHashtags = document.querySelectorAll('.hashtag-item.selected');
+            const hashtagText = Array.from(selectedHashtags).map(item => item.textContent).join(' ');
+            const copyStatus = document.getElementById('copyStatus');
+
+            if (hashtagText) {
+                navigator.clipboard.writeText(hashtagText).then(() => {
+                    copyStatus.textContent = 'คัดลอกสำเร็จแล้ว!';
                 }).catch(err => {
-                    console.error('Failed to copy text: ', err);
-                    copyStatusDiv.textContent = 'ไม่สามารถคัดลอกได้';
-                    copyStatusDiv.classList.remove('text-green-600');
-                    copyStatusDiv.classList.add('text-red-600');
+                    console.error('Failed to copy hashtags:', err);
+                    copyStatus.textContent = 'ไม่สามารถคัดลอกได้';
                 });
             } else {
-                copyStatusDiv.textContent = 'กรุณาเลือกแฮชแท็กก่อน';
-                copyStatusDiv.classList.remove('text-green-600');
-                copyStatusDiv.classList.add('text-red-600');
+                copyStatus.textContent = 'กรุณาเลือกแฮชแท็กก่อน';
             }
+
+            setTimeout(() => {
+                copyStatus.textContent = '';
+            }, 3000);
+        }
+
+
+        // --- General and Firebase Setup ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check for Firebase config and initialize
+            if (Object.keys(firebaseConfig).length > 0) {
+                // Initialize Firebase
+                app = firebase.initializeApp(firebaseConfig);
+                db = firebase.getFirestore(app);
+                auth = firebase.getAuth(app);
+                
+                // Set Firestore logging to debug mode
+                firebase.setLogLevel('Debug');
+
+                // Sign in with custom token or anonymously
+                firebase.onAuthStateChanged(auth, async (user) => {
+                    if (!user) {
+                        try {
+                            if (typeof __initial_auth_token !== 'undefined') {
+                                await firebase.signInWithCustomToken(auth, __initial_auth_token);
+                            } else {
+                                await firebase.signInAnonymously(auth);
+                            }
+                        } catch (error) {
+                            console.error('Firebase Auth Error:', error);
+                        }
+                    }
+                    userId = auth.currentUser?.uid || 'anonymous';
+                    console.log('User ID:', userId);
+                    listenForReviews();
+                });
+            } else {
+                console.error('Firebase config not found. Firestore services will not be active.');
+                document.getElementById('reviewsContainer').innerHTML = '<p class="text-red-400">Firebase ไม่ได้ถูกกำหนดค่าไว้ ส่วนรีวิวจะไม่ทำงาน</p>';
+            }
+            
+            // Auto-scroll functionality for a dynamic look
+            function autoScroll() {
+                const body = document.body;
+                let currentScroll = body.scrollTop;
+                const scrollHeight = body.scrollHeight - window.innerHeight;
+
+                if (!isAutoScrollActive) return;
+
+                if (currentScroll >= scrollHeight) {
+                    if (!isAtEnd) {
+                        isAtEnd = true;
+                        endScrollTimer = setTimeout(() => {
+                            isAtEnd = false;
+                            body.scrollTop = 0;
+                        }, 2000); // Wait 2 seconds at the end before resetting
+                    }
+                } else {
+                    body.scrollTop += 1;
+                    isAtEnd = false;
+                    clearTimeout(endScrollTimer);
+                }
+                animationFrameId = requestAnimationFrame(autoScroll);
+            }
+
+            function stopAutoScroll() {
+                isAutoScrollActive = false;
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                }
+            }
+
+            window.addEventListener('scroll', () => {
+                stopAutoScroll();
+            });
+
+            // Start auto-scroll after a short delay
+            setTimeout(() => {
+                isAutoScrollActive = true;
+                autoScroll();
+            }, 1000);
+
+            // Add event listeners for navigation
+            document.querySelectorAll('.nav-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = button.getAttribute('data-target-id');
+                    const targetSection = document.getElementById(targetId);
+                    if (targetSection) {
+                        targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            });
+
+            // Event Listeners for the เด็กเฝ้าร้าน section
+            const chatForm = document.getElementById('chatForm');
+            if (chatForm) {
+                chatForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const prompt = document.getElementById('chatInput').value;
+                    if (prompt) {
+                        sendChatPrompt(prompt);
+                    }
+                });
+            }
+
+            const priceForm = document.getElementById('priceForm');
+            if (priceForm) {
+                priceForm.addEventListener('submit', handlePriceCalculation);
+            }
+
+            const imageForm = document.getElementById('imageForm');
+            if (imageForm) {
+                imageForm.addEventListener('submit', handleImageGeneration);
+            }
+
+            // Event Listeners for Review and Hashtag sections
+            const reviewForm = document.getElementById('reviewForm');
+            if (reviewForm) {
+                reviewForm.addEventListener('submit', handleReviewSubmission);
+            }
+            
+            const copyHashtagsBtn = document.getElementById('copyHashtagsBtn');
+            if (copyHashtagsBtn) {
+                copyHashtagsBtn.addEventListener('click', copyHashtags);
+            }
+            
+            // Load hashtags on page load
+            loadHashtags();
         });
+
     </script>
 </body>
 </html>
