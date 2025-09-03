@@ -699,17 +699,14 @@
                             items: {
                                 type: "OBJECT",
                                 properties: {
-                                    "category": { "type": "STRING", "description": "หมวดหมู่ของแฮชแท็ก" },
-                                    "hashtags": {
-                                        "type": "ARRAY",
-                                        "items": { "type": "STRING", "description": "รายการแฮชแท็กที่เกี่ยวข้อง" }
-                                    }
-                                }
+                                    "category": { "type": "STRING" },
+                                    "hashtags": { "type": "ARRAY", "items": { "type": "STRING" } }
+                                },
+                                "propertyOrdering": ["category", "hashtags"]
                             }
                         }
                     }
                 };
-
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
                 
                 const response = await fetch(apiUrl, {
@@ -723,118 +720,104 @@
                 }
                 
                 const result = await response.json();
-                const jsonString = result.candidates[0].content.parts[0].text;
-                const hashtagsData = JSON.parse(jsonString);
-
-                hashtagsData.forEach(group => {
-                    const categoryDiv = document.createElement('div');
-                    categoryDiv.className = 'bg-dark-card p-4 rounded-xl';
-                    categoryDiv.innerHTML = `<h3 class="text-xl font-semibold mb-3 text-accent-teal">${group.category}</h3>`;
-                    
-                    const tagsDiv = document.createElement('div');
-                    tagsDiv.className = 'flex flex-wrap gap-2';
-                    group.hashtags.forEach(tag => {
-                        const tagSpan = document.createElement('span');
-                        tagSpan.textContent = tag;
-                        tagSpan.className = 'text-sm bg-gray-700 text-gray-200 px-3 py-1 rounded-full cursor-pointer hover:bg-gray-600 transition-colors duration-200 tag-item';
-                        tagSpan.setAttribute('data-selected', 'false');
-                        tagsDiv.appendChild(tagSpan);
-                    });
-                    
-                    categoryDiv.appendChild(tagsDiv);
-                    hashtagContainer.appendChild(categoryDiv);
-                });
-
-                document.querySelectorAll('.tag-item').forEach(tag => {
-                    tag.addEventListener('click', () => {
-                        const isSelected = tag.getAttribute('data-selected') === 'true';
-                        tag.setAttribute('data-selected', !isSelected);
-                        tag.classList.toggle('bg-teal-500', !isSelected);
-                        tag.classList.toggle('bg-gray-700', isSelected);
-                        updateCopyButtonState();
-                    });
-                });
-
+                const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!jsonText) {
+                    throw new Error("Invalid response format from API.");
+                }
+                
+                const data = JSON.parse(jsonText);
+                
                 hashtagLoading.classList.add('hidden');
                 copyHashtagsBtn.classList.remove('hidden');
-
+                
+                data.forEach(group => {
+                    const categoryDiv = document.createElement('div');
+                    categoryDiv.innerHTML = `<h3 class="text-xl font-semibold text-accent-teal mb-2">${group.category}</h3>`;
+                    
+                    const hashtagsDiv = document.createElement('div');
+                    hashtagsDiv.className = 'flex flex-wrap gap-2 justify-center';
+                    
+                    group.hashtags.forEach(tag => {
+                        const tagSpan = document.createElement('span');
+                        tagSpan.className = 'bg-gray-700 text-gray-200 text-sm py-1 px-3 rounded-full cursor-pointer hover:bg-teal-500 transition-colors duration-200 select-none';
+                        tagSpan.textContent = tag;
+                        tagSpan.dataset.tag = tag;
+                        tagSpan.addEventListener('click', () => {
+                            tagSpan.classList.toggle('bg-teal-500');
+                            tagSpan.classList.toggle('bg-gray-700');
+                        });
+                        hashtagsDiv.appendChild(tagSpan);
+                    });
+                    
+                    categoryDiv.appendChild(hashtagsDiv);
+                    hashtagContainer.appendChild(categoryDiv);
+                });
             } catch (error) {
-                console.error("Error fetching hashtags:", error);
-                hashtagLoading.innerHTML = '<p class="text-red-500">ไม่สามารถโหลดแฮชแท็กได้ โปรดลองใหม่อีกครั้งในภายหลัง</p>';
-                copyHashtagsBtn.classList.add('hidden');
+                console.error("Error generating hashtags:", error);
+                hashtagLoading.innerHTML = `<p class="mt-2 text-red-400">เกิดข้อผิดพลาดในการโหลดแฮชแท็ก. โปรดลองใหม่อีกครั้ง</p>`;
             }
         }
         
-        function updateCopyButtonState() {
-            const selectedTags = document.querySelectorAll('.tag-item[data-selected="true"]');
-            const copyBtn = document.getElementById('copyHashtagsBtn');
-            if (selectedTags.length > 0) {
-                copyBtn.disabled = false;
-                copyBtn.style.opacity = '1';
-                copyBtn.style.cursor = 'pointer';
-            } else {
-                copyBtn.disabled = true;
-                copyBtn.style.opacity = '0.5';
-                copyBtn.style.cursor = 'not-allowed';
-            }
-        }
-
         function handleCopyHashtags() {
-            const selectedTags = document.querySelectorAll('.tag-item[data-selected="true"]');
-            const hashtagsToCopy = Array.from(selectedTags).map(tag => tag.textContent).join(' ');
+            const selectedHashtags = document.querySelectorAll('#hashtag-container .bg-teal-500');
+            const hashtagsToCopy = Array.from(selectedHashtags).map(tag => tag.textContent).join(' ');
+            const copyStatus = document.getElementById('copyStatus');
             
-            if (hashtagsToCopy) {
-                const tempInput = document.createElement('textarea');
-                tempInput.value = hashtagsToCopy;
-                document.body.appendChild(tempInput);
-                tempInput.select();
-                document.execCommand('copy');
-                document.body.removeChild(tempInput);
-                
-                showStatus('copyStatus', 'คัดลอกแฮชแท็กเรียบร้อยแล้ว!', true);
+            if (hashtagsToCopy.length > 0) {
+                try {
+                    // Use a temporary textarea to copy to clipboard
+                    const tempTextArea = document.createElement('textarea');
+                    tempTextArea.value = hashtagsToCopy;
+                    document.body.appendChild(tempTextArea);
+                    tempTextArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempTextArea);
+                    
+                    showStatus('copyStatus', 'คัดลอกแฮชแท็กเรียบร้อยแล้ว!' , true);
+                } catch (err) {
+                    console.error('Failed to copy hashtags:', err);
+                    showStatus('copyStatus', 'ไม่สามารถคัดลอกได้ โปรดลองคัดลอกด้วยตนเอง' , false);
+                }
             } else {
-                showStatus('copyStatus', 'กรุณาเลือกแฮชแท็กอย่างน้อยหนึ่งรายการ', false);
+                showStatus('copyStatus', 'กรุณาเลือกแฮชแท็กก่อน' , false);
             }
         }
 
         // --- Chatbot Logic ---
-        const CHAT_MODEL = 'gemini-2.5-flash-preview-05-20';
+        const floatingChatButton = document.getElementById('floating-chat-button');
+        const chatModalOverlay = document.getElementById('chat-modal-overlay');
+        const chatCloseButton = document.getElementById('chat-close-button');
+        const chatBox = document.getElementById('chat-box');
+        const chatForm = document.getElementById('chatForm');
+        const chatInput = document.getElementById('chatInput');
+        
         let chatHistory = [];
-
-        // Function to render a message in the chatbox
-        function renderMessage(sender, text) {
-            const chatBox = document.getElementById('chat-box');
-            const messageBubble = document.createElement('div');
-            messageBubble.className = `message-bubble ${sender === 'user' ? 'user-message' : 'dek-fao-ran-message'}`;
-            messageBubble.textContent = text;
-            
-            // Add a small spacer to avoid bubbles touching
-            const spacer = document.createElement('div');
-            spacer.style.height = '8px';
-            chatBox.prepend(messageBubble, spacer);
-            
-            if (isAutoScrollActive) {
-                chatBox.scrollTop = 0; // Scroll to top to show new messages
-            }
+        
+        function appendMessage(sender, text) {
+            const messageElement = document.createElement('div');
+            messageElement.className = `message-bubble ${sender === 'user' ? 'user-message' : 'dek-fao-ran-message'}`;
+            messageElement.textContent = text;
+            chatBox.prepend(messageElement);
         }
 
-        // Function to handle the chat input and send a request to the LLM
-        async function sendMessageToBot(message) {
-            renderMessage('user', message);
-            const chatInput = document.getElementById('chatInput');
-            chatInput.disabled = true;
-
-            const systemPrompt = "คุณคือ 'เด็กเฝ้าร้าน' (เด็ก-เฝ้า-ร้าน), ผู้ช่วยแชทบอทที่เป็นมิตรและเป็นทางการเล็กน้อยสำหรับร้าน Kant Klao Shop ซึ่งให้บริการด้านวิชาการและเทคโนโลยี คุณมีหน้าที่ตอบคำถามลูกค้าเกี่ยวกับบริการของร้าน และให้ข้อมูลติดต่อกลับที่ถูกต้อง ห้ามให้ข้อมูลที่เป็นอันตราย, ลามกอนาจาร, หรือผิดกฎหมาย และไม่ตอบคำถามนอกเหนือจากขอบเขตของร้าน Kant Klao Shop\n\nข้อมูลติดต่อ:\nโทรศัพท์: 080-1120371\nLine: https://lin.ee/7W36iij\nFacebook: https://www.facebook.com/rab.thakar.ban.rayngan.rab.tha.kickrrm.p\n\nรายการบริการของร้าน:\n- รับทำรายงานทั่วไป\n- รับทำรายงานโครงงานนักศึกษา\n- กิจกรรมประจำชุดวิชา (ม.ส.ธ. และอื่น ๆ)\n- งานวิจัยและบทความวิชาการ (ป.ตรี)\n- โครงงาน ปวส. และ ปวช.\n- งานเขียนบทความ, คอนเทนต์, บล็อก\n- รับทำไฟล์ Sheet และจัดการข้อมูลใน Spreadsheet\n- พัฒนาเว็บไซต์และแอปพลิเคชัน\n- เขียนโปรแกรมและสคริปต์ตามความต้องการ (งานด่วน)\n\nโปรดใช้ภาษาไทยที่สุภาพและเป็นกันเองในการตอบคำถามลูกค้า";
+        async function sendMessage(message) {
+            const prompt = message;
+            appendMessage('user', prompt);
+            chatInput.value = '';
             
-            chatHistory.push({ role: "user", parts: [{ text: message }] });
+            chatHistory.push({ role: 'user', parts: [{ text: prompt }] });
+            
+            const systemPrompt = "คุณคือผู้ช่วยแชทบอทของร้าน Kant Klao Shop ที่มีชื่อว่า 'เด็กเฝ้าร้าน' หน้าที่ของคุณคือตอบคำถามลูกค้าเกี่ยวกับบริการต่างๆ ของร้าน เช่น รับทำรายงาน, งานวิจัย, งานเขียนบทความ, พัฒนาเว็บและแอปพลิเคชัน, งานโปรแกรมมิ่ง และงาน Sheet/Excel คุณมีบุคลิกเป็นมิตร สุภาพ และพร้อมให้คำแนะนำเสมอ";
 
             const payload = {
                 contents: chatHistory,
-                systemInstruction: { parts: [{ text: systemPrompt }] },
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                }
             };
 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${CHAT_MODEL}:generateContent?key=${API_KEY}`;
-
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+            
             try {
                 const response = await fetch(apiUrl, {
                     method: 'POST',
@@ -842,76 +825,57 @@
                     body: JSON.stringify(payload)
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const result = await response.json();
-                const botResponse = result.candidates[0].content.parts[0].text;
-                renderMessage('dek-fao-ran', botResponse);
-                chatHistory.push({ role: "model", parts: [{ text: botResponse }] });
+                const botResponse = result.candidates?.[0]?.content?.parts?.[0]?.text || "ขออภัยค่ะ, มีข้อผิดพลาดเกิดขึ้น";
+                
+                appendMessage('bot', botResponse);
+                chatHistory.push({ role: 'model', parts: [{ text: botResponse }] });
 
             } catch (error) {
-                console.error("Chatbot API Error:", error);
-                renderMessage('dek-fao-ran', "ขออภัยครับ ตอนนี้ผู้ช่วยเด็กเฝ้าร้านไม่ว่าง กรุณาลองใหม่อีกครั้ง หรือติดต่อทางช่องทางที่ให้ไว้ด้านล่างครับ");
-            } finally {
-                chatInput.disabled = false;
-                chatInput.focus();
+                console.error("Error fetching chat response:", error);
+                appendMessage('bot', "ขออภัยค่ะ, ไม่สามารถเชื่อมต่อกับบอทได้ในขณะนี้");
             }
         }
-
+        
         // --- Event Listeners ---
-        window.onload = function() {
-            // Setup Firebase and data listeners
+        document.addEventListener('DOMContentLoaded', () => {
             initFirebase();
-            // Setup navigation scroll
             setupNavigation();
-            // Fetch and render hashtags from LLM
             fetchAndRenderHashtags();
-
-            // Set up event listeners for review submission
-            const reviewForm = document.getElementById('reviewForm');
-            if (reviewForm) {
-                reviewForm.addEventListener('submit', handleReviewSubmission);
-            }
             
-            // Set up event listener for hashtag copy button
-            const copyHashtagsBtn = document.getElementById('copyHashtagsBtn');
-            if (copyHashtagsBtn) {
-                copyHashtagsBtn.addEventListener('click', handleCopyHashtags);
-            }
+            // Review form event listener
+            document.getElementById('reviewForm').addEventListener('submit', handleReviewSubmission);
             
-            // Set up event listeners for chat modal
-            const floatingChatButton = document.getElementById('floating-chat-button');
-            const chatModalOverlay = document.getElementById('chat-modal-overlay');
-            const chatCloseButton = document.getElementById('chat-close-button');
-            const chatForm = document.getElementById('chatForm');
-
+            // Copy button event listener
+            document.getElementById('copyHashtagsBtn').addEventListener('click', handleCopyHashtags);
+            
+            // Chat modal event listeners
             floatingChatButton.addEventListener('click', () => {
                 chatModalOverlay.classList.add('active');
-                document.getElementById('chatInput').focus();
             });
-
+            
             chatCloseButton.addEventListener('click', () => {
                 chatModalOverlay.classList.remove('active');
             });
             
-            chatModalOverlay.addEventListener('click', (event) => {
-                if (event.target === chatModalOverlay) {
+            chatModalOverlay.addEventListener('click', (e) => {
+                if (e.target.id === 'chat-modal-overlay') {
                     chatModalOverlay.classList.remove('active');
                 }
             });
             
             chatForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const chatInput = document.getElementById('chatInput');
                 const message = chatInput.value.trim();
                 if (message) {
-                    sendMessageToBot(message);
-                    chatInput.value = '';
+                    sendMessage(message);
                 }
             });
-            
-            // Initial welcome message from the bot
-            renderMessage('dek-fao-ran', "สวัสดีครับ ผม 'เด็กเฝ้าร้าน' ผู้ช่วยประจำ Kant Klao Shop มีอะไรให้ผมช่วยไหมครับ?");
-
-        };
+        });
     </script>
 </body>
 </html>
