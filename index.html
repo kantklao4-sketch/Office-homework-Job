@@ -491,6 +491,7 @@
         
         // --- Firebase Globals ---
         let app, db, auth, userId;
+        // **ใช้ตัวแปร __app_id ที่กำหนดไว้โดย Canvas เพื่อระบุแอปพลิเคชัน**
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
         const API_KEY = ""; // Leave this empty, it will be provided in the runtime
@@ -547,232 +548,370 @@
             const reviewData = {
                 name: name,
                 reviewText: reviewText,
-                timestamp: firebase.serverTimestamp(),
+                imageUrl: ''
             };
-            
-            // Note: This example does not upload the image to a server.
-            // It just logs a message for the user. To make this functional,
-            // you would need to implement Firebase Storage.
-            if (reviewImage) {
-                console.log("Image attached, but not uploaded to the server in this version.");
-                console.log("Image name:", reviewImage.name);
-                reviewData.imageUrl = 'https://placehold.co/400x300/1e2a38/b0c0d0?text=Image+Not+Uploaded';
-            } else {
-                reviewData.imageUrl = 'https://placehold.co/400x300/1e2a38/b0c0d0?text=No+Image';
-            }
 
+            // Image handling (Local display only)
+            if (reviewImage) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    reviewData.imageUrl = e.target.result;
+                    addReviewToFirestore(reviewData);
+                };
+                reader.readAsDataURL(reviewImage);
+            } else {
+                addReviewToFirestore(reviewData);
+            }
+        }
+
+        async function addReviewToFirestore(reviewData) {
             try {
-                const reviewsCollectionRef = firebase.collection(db, `artifacts/${appId}/public/data/reviews`);
-                await firebase.addDoc(reviewsCollectionRef, reviewData);
-                showStatus('reviewStatus', 'โพสต์รีวิวสำเร็จแล้ว! ขอบคุณครับ', true);
-                reviewForm.reset();
+                if (!db) {
+                    throw new Error("Firestore is not initialized.");
+                }
+
+                // Path to the public collection
+                const reviewsColRef = firebase.collection(db, `artifacts/${appId}/public/data/reviews`);
+                await firebase.addDoc(reviewsColRef, {
+                    ...reviewData,
+                    timestamp: firebase.serverTimestamp(),
+                });
+                
+                showStatus('reviewStatus', 'โพสต์รีวิวสำเร็จ!' , true);
             } catch (error) {
-                console.error('Error posting review:', error);
-                showStatus('reviewStatus', 'เกิดข้อผิดพลาดในการโพสต์รีวิว', false);
+                console.error("Error adding review: ", error);
+                showStatus('reviewStatus', `ข้อผิดพลาด: ${error.message}` , false);
             } finally {
+                const submitBtn = document.getElementById('submitReviewBtn');
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-comment-dots"></i><span>โพสต์รีวิว</span>';
+                submitBtn.innerHTML = '<i class="fas fa-comment-dots"></i><span class="ml-2">โพสต์รีวิว</span>';
+            }
+        }
+
+        // Initialize Firebase and set up listener for reviews
+        function initFirebase() {
+            try {
+                if (Object.keys(firebaseConfig).length > 0) {
+                    app = firebase.initializeApp(firebaseConfig);
+                    auth = firebase.getAuth(app);
+                    db = firebase.getFirestore(app);
+
+                    firebase.setLogLevel('debug'); // Enable debug logging
+
+                    firebase.onAuthStateChanged(auth, async (user) => {
+                        if (user) {
+                            userId = user.uid;
+                            setupReviewListener();
+                        } else {
+                            try {
+                                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                                if (initialAuthToken) {
+                                    await firebase.signInWithCustomToken(auth, initialAuthToken);
+                                } else {
+                                    await firebase.signInAnonymously(auth);
+                                }
+                            } catch (error) {
+                                console.error("Firebase auth error:", error);
+                            }
+                        }
+                    });
+                } else {
+                    console.error("Firebase config is missing.");
+                }
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
             }
         }
         
-        // Function to fetch and listen for real-time reviews
-        function listenForReviews() {
-            const reviewsContainer = document.getElementById('reviewsContainer');
-            reviewsContainer.innerHTML = ''; // Clear existing reviews
-            
-            const reviewsCollectionRef = firebase.collection(db, `artifacts/${appId}/public/data/reviews`);
-            const q = firebase.query(reviewsCollectionRef);
-            
-            firebase.onSnapshot(q, (snapshot) => {
-                const reviews = [];
-                snapshot.forEach((doc) => {
-                    reviews.push(doc.data());
-                });
+        function setupReviewListener() {
+            try {
+                const reviewsContainer = document.getElementById('reviewsContainer');
+                if (!db || !reviewsContainer) {
+                    console.error("Firestore or reviews container not found.");
+                    return;
+                }
+                const reviewsColRef = firebase.collection(db, `artifacts/${appId}/public/data/reviews`);
+                const q = firebase.query(reviewsColRef);
 
-                // Sort reviews by timestamp in descending order in JavaScript
-                reviews.sort((a, b) => {
-                    if (a.timestamp && b.timestamp) {
-                        return b.timestamp.toMillis() - a.timestamp.toMillis();
+                firebase.onSnapshot(q, (snapshot) => {
+                    reviewsContainer.innerHTML = ''; // Clear existing reviews
+                    const reviews = [];
+                    snapshot.forEach(doc => {
+                        reviews.push({ id: doc.id, ...doc.data() });
+                    });
+                    
+                    // Sort reviews by timestamp descending
+                    reviews.sort((a, b) => {
+                        const timeA = a.timestamp ? a.timestamp.toDate() : new Date(0);
+                        const timeB = b.timestamp ? b.timestamp.toDate() : new Date(0);
+                        return timeB - timeA;
+                    });
+                    
+                    reviews.forEach(renderReviewCard);
+                }, (error) => {
+                    console.error("Error listening to reviews:", error);
+                    showStatus('reviewStatus', 'ไม่สามารถโหลดรีวิวได้ โปรดลองใหม่อีกครั้ง' , false);
+                });
+            } catch (error) {
+                console.error("Failed to set up review listener:", error);
+            }
+        }
+
+        // --- Navigation Logic ---
+        function setupNavigation() {
+            document.querySelectorAll('.nav-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const targetId = e.target.getAttribute('data-target-id');
+                    if (targetId) {
+                        const targetElement = document.getElementById(targetId);
+                        if (targetElement) {
+                            window.scrollTo({
+                                top: targetElement.offsetTop - 20,
+                                behavior: 'smooth'
+                            });
+                        }
                     }
-                    return 0;
                 });
-
-                reviewsContainer.innerHTML = ''; // Clear to prevent duplicates
-                reviews.forEach(review => renderReviewCard(review));
-            }, (error) => {
-                console.error("Error fetching reviews:", error);
             });
         }
         
-        // --- เด็กเฝ้าร้าน Chatbot Function Implementations ---
-
-        // Function to handle chat prompt submission
-        async function sendChatPrompt(prompt) {
-            const chatBox = document.getElementById('chat-box');
-            const chatInput = document.getElementById('chatInput');
-            const chatSendBtn = document.getElementById('chatSendBtn');
-
-            // Add user message to chatbox
-            const userMessageDiv = document.createElement('div');
-            userMessageDiv.className = 'message-bubble user-message';
-            userMessageDiv.textContent = prompt;
-            chatBox.prepend(userMessageDiv);
-
-            // Add loading indicator
-            const loadingDiv = document.createElement('div');
-            loadingDiv.className = 'message-bubble dek-fao-ran-message animate-pulse';
-            loadingDiv.textContent = 'กำลังพิมพ์...';
-            chatBox.prepend(loadingDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
+        // --- Hashtag Generator and Copy Logic ---
+        async function fetchAndRenderHashtags() {
+            const hashtagLoading = document.getElementById('hashtag-loading');
+            const hashtagContainer = document.getElementById('hashtag-container');
+            const copyHashtagsBtn = document.getElementById('copyHashtagsBtn');
             
-            chatInput.value = '';
-            chatInput.disabled = true;
-            chatSendBtn.disabled = true;
+            hashtagLoading.classList.remove('hidden');
+            hashtagContainer.innerHTML = '';
+            copyHashtagsBtn.classList.add('hidden');
 
             try {
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
-                const payload = {
-                    contents: [{
-                        parts: [{ text: prompt }]
-                    }],
-                    tools: [{ "google_search": {} }],
-                    systemInstruction: {
-                        parts: [{ text: "You are a professional shop assistant for 'Kant Klao Shop' in Thailand. Your name is 'Dek Fao Ran' (เด็กเฝ้าร้าน). Your role is to help customers, answer their questions about services, prices, and processes in a friendly and professional tone. Only provide information about the services listed on the website. Respond in Thai only." }]
-                    },
-                };
+                const systemPrompt = "คุณคือผู้ช่วยด้านการตลาดที่เชี่ยวชาญด้านธุรกิจดิจิทัลและงานบริการสำหรับนักศึกษา โปรดสร้างรายการแฮชแท็กภาษาไทยที่มีความเกี่ยวข้องกับคำว่า 'Kant Klao Shop' 'รับทำรายงาน' และ 'บริการเขียนบทความ' แบ่งกลุ่มแฮชแท็กตามหมวดหมู่และจัดให้ในรูปแบบ JSON ที่มี schema ที่กำหนด";
+                const userQuery = "สร้างแฮชแท็กสำหรับ Kant Klao Shop";
                 
-                let response = await fetch(apiUrl, {
+                const payload = {
+                    contents: [{ parts: [{ text: userQuery }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "ARRAY",
+                            items: {
+                                type: "OBJECT",
+                                properties: {
+                                    "category": { "type": "STRING", "description": "หมวดหมู่ของแฮชแท็ก" },
+                                    "hashtags": {
+                                        "type": "ARRAY",
+                                        "items": { "type": "STRING", "description": "รายการแฮชแท็กที่เกี่ยวข้อง" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+                
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-
+                
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-
-                const result = await response.json();
-                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
                 
-                // Remove loading indicator
-                loadingDiv.remove();
+                const result = await response.json();
+                const jsonString = result.candidates[0].content.parts[0].text;
+                const hashtagsData = JSON.parse(jsonString);
 
-                if (text) {
-                    const dekFaoRanMessageDiv = document.createElement('div');
-                    dekFaoRanMessageDiv.className = 'message-bubble dek-fao-ran-message';
-                    dekFaoRanMessageDiv.textContent = text;
-                    chatBox.prepend(dekFaoRanMessageDiv);
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                } else {
-                    const errorMessageDiv = document.createElement('div');
-                    errorMessageDiv.className = 'message-bubble dek-fao-ran-message text-red-400';
-                    errorMessageDiv.textContent = 'ขออภัย เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองอีกครั้งในภายหลัง';
-                    chatBox.prepend(errorMessageDiv);
-                }
+                hashtagsData.forEach(group => {
+                    const categoryDiv = document.createElement('div');
+                    categoryDiv.className = 'bg-dark-card p-4 rounded-xl';
+                    categoryDiv.innerHTML = `<h3 class="text-xl font-semibold mb-3 text-accent-teal">${group.category}</h3>`;
+                    
+                    const tagsDiv = document.createElement('div');
+                    tagsDiv.className = 'flex flex-wrap gap-2';
+                    group.hashtags.forEach(tag => {
+                        const tagSpan = document.createElement('span');
+                        tagSpan.textContent = tag;
+                        tagSpan.className = 'text-sm bg-gray-700 text-gray-200 px-3 py-1 rounded-full cursor-pointer hover:bg-gray-600 transition-colors duration-200 tag-item';
+                        tagSpan.setAttribute('data-selected', 'false');
+                        tagsDiv.appendChild(tagSpan);
+                    });
+                    
+                    categoryDiv.appendChild(tagsDiv);
+                    hashtagContainer.appendChild(categoryDiv);
+                });
+
+                document.querySelectorAll('.tag-item').forEach(tag => {
+                    tag.addEventListener('click', () => {
+                        const isSelected = tag.getAttribute('data-selected') === 'true';
+                        tag.setAttribute('data-selected', !isSelected);
+                        tag.classList.toggle('bg-teal-500', !isSelected);
+                        tag.classList.toggle('bg-gray-700', isSelected);
+                        updateCopyButtonState();
+                    });
+                });
+
+                hashtagLoading.classList.add('hidden');
+                copyHashtagsBtn.classList.remove('hidden');
 
             } catch (error) {
-                console.error('Error with API call:', error);
-                loadingDiv.remove();
-                const errorMessageDiv = document.createElement('div');
-                errorMessageDiv.className = 'message-bubble dek-fao-ran-message text-red-400';
-                errorMessageDiv.textContent = 'ขออภัย เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองอีกครั้งในภายหลัง';
-                chatBox.prepend(errorMessageDiv);
+                console.error("Error fetching hashtags:", error);
+                hashtagLoading.innerHTML = '<p class="text-red-500">ไม่สามารถโหลดแฮชแท็กได้ โปรดลองใหม่อีกครั้งในภายหลัง</p>';
+                copyHashtagsBtn.classList.add('hidden');
+            }
+        }
+        
+        function updateCopyButtonState() {
+            const selectedTags = document.querySelectorAll('.tag-item[data-selected="true"]');
+            const copyBtn = document.getElementById('copyHashtagsBtn');
+            if (selectedTags.length > 0) {
+                copyBtn.disabled = false;
+                copyBtn.style.opacity = '1';
+                copyBtn.style.cursor = 'pointer';
+            } else {
+                copyBtn.disabled = true;
+                copyBtn.style.opacity = '0.5';
+                copyBtn.style.cursor = 'not-allowed';
+            }
+        }
+
+        function handleCopyHashtags() {
+            const selectedTags = document.querySelectorAll('.tag-item[data-selected="true"]');
+            const hashtagsToCopy = Array.from(selectedTags).map(tag => tag.textContent).join(' ');
+            
+            if (hashtagsToCopy) {
+                const tempInput = document.createElement('textarea');
+                tempInput.value = hashtagsToCopy;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                
+                showStatus('copyStatus', 'คัดลอกแฮชแท็กเรียบร้อยแล้ว!', true);
+            } else {
+                showStatus('copyStatus', 'กรุณาเลือกแฮชแท็กอย่างน้อยหนึ่งรายการ', false);
+            }
+        }
+
+        // --- Chatbot Logic ---
+        const CHAT_MODEL = 'gemini-2.5-flash-preview-05-20';
+        let chatHistory = [];
+
+        // Function to render a message in the chatbox
+        function renderMessage(sender, text) {
+            const chatBox = document.getElementById('chat-box');
+            const messageBubble = document.createElement('div');
+            messageBubble.className = `message-bubble ${sender === 'user' ? 'user-message' : 'dek-fao-ran-message'}`;
+            messageBubble.textContent = text;
+            
+            // Add a small spacer to avoid bubbles touching
+            const spacer = document.createElement('div');
+            spacer.style.height = '8px';
+            chatBox.prepend(messageBubble, spacer);
+            
+            if (isAutoScrollActive) {
+                chatBox.scrollTop = 0; // Scroll to top to show new messages
+            }
+        }
+
+        // Function to handle the chat input and send a request to the LLM
+        async function sendMessageToBot(message) {
+            renderMessage('user', message);
+            const chatInput = document.getElementById('chatInput');
+            chatInput.disabled = true;
+
+            const systemPrompt = "คุณคือ 'เด็กเฝ้าร้าน' (เด็ก-เฝ้า-ร้าน), ผู้ช่วยแชทบอทที่เป็นมิตรและเป็นทางการเล็กน้อยสำหรับร้าน Kant Klao Shop ซึ่งให้บริการด้านวิชาการและเทคโนโลยี คุณมีหน้าที่ตอบคำถามลูกค้าเกี่ยวกับบริการของร้าน และให้ข้อมูลติดต่อกลับที่ถูกต้อง ห้ามให้ข้อมูลที่เป็นอันตราย, ลามกอนาจาร, หรือผิดกฎหมาย และไม่ตอบคำถามนอกเหนือจากขอบเขตของร้าน Kant Klao Shop\n\nข้อมูลติดต่อ:\nโทรศัพท์: 080-1120371\nLine: https://lin.ee/7W36iij\nFacebook: https://www.facebook.com/rab.thakar.ban.rayngan.rab.tha.kickrrm.p\n\nรายการบริการของร้าน:\n- รับทำรายงานทั่วไป\n- รับทำรายงานโครงงานนักศึกษา\n- กิจกรรมประจำชุดวิชา (ม.ส.ธ. และอื่น ๆ)\n- งานวิจัยและบทความวิชาการ (ป.ตรี)\n- โครงงาน ปวส. และ ปวช.\n- งานเขียนบทความ, คอนเทนต์, บล็อก\n- รับทำไฟล์ Sheet และจัดการข้อมูลใน Spreadsheet\n- พัฒนาเว็บไซต์และแอปพลิเคชัน\n- เขียนโปรแกรมและสคริปต์ตามความต้องการ (งานด่วน)\n\nโปรดใช้ภาษาไทยที่สุภาพและเป็นกันเองในการตอบคำถามลูกค้า";
+            
+            chatHistory.push({ role: "user", parts: [{ text: message }] });
+
+            const payload = {
+                contents: chatHistory,
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${CHAT_MODEL}:generateContent?key=${API_KEY}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                const botResponse = result.candidates[0].content.parts[0].text;
+                renderMessage('dek-fao-ran', botResponse);
+                chatHistory.push({ role: "model", parts: [{ text: botResponse }] });
+
+            } catch (error) {
+                console.error("Chatbot API Error:", error);
+                renderMessage('dek-fao-ran', "ขออภัยครับ ตอนนี้ผู้ช่วยเด็กเฝ้าร้านไม่ว่าง กรุณาลองใหม่อีกครั้ง หรือติดต่อทางช่องทางที่ให้ไว้ด้านล่างครับ");
             } finally {
                 chatInput.disabled = false;
-                chatSendBtn.disabled = false;
                 chatInput.focus();
             }
         }
 
-        // --- Event Listeners and Initialization ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // Firebase setup
-            if (Object.keys(firebaseConfig).length > 0) {
-                app = firebase.initializeApp(firebaseConfig);
-                db = firebase.getFirestore(app);
-                auth = firebase.getAuth(app);
-                firebase.setLogLevel('debug'); // For debugging
+        // --- Event Listeners ---
+        window.onload = function() {
+            // Setup Firebase and data listeners
+            initFirebase();
+            // Setup navigation scroll
+            setupNavigation();
+            // Fetch and render hashtags from LLM
+            fetchAndRenderHashtags();
 
-                firebase.onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        console.log("User signed in with UID:", userId);
-                        listenForReviews(); // Start listening for reviews after auth
-                    } else {
-                        // Sign in anonymously if no user is authenticated
-                        try {
-                            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                            if (initialAuthToken) {
-                                await firebase.signInWithCustomToken(auth, initialAuthToken);
-                            } else {
-                                await firebase.signInAnonymously(auth);
-                            }
-                        } catch (error) {
-                            console.error("Error during anonymous sign-in:", error);
-                        }
-                    }
-                });
-            } else {
-                console.error("Firebase config is missing. Please provide it for real-time functionality.");
-            }
-            
-            // Event listener for review form submission
+            // Set up event listeners for review submission
             const reviewForm = document.getElementById('reviewForm');
             if (reviewForm) {
                 reviewForm.addEventListener('submit', handleReviewSubmission);
             }
-
-            // Event listener for chat form submission
-            const chatForm = document.getElementById('chatForm');
-            if (chatForm) {
-                chatForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const prompt = document.getElementById('chatInput').value.trim();
-                    if (prompt) {
-                        sendChatPrompt(prompt);
-                    }
-                });
+            
+            // Set up event listener for hashtag copy button
+            const copyHashtagsBtn = document.getElementById('copyHashtagsBtn');
+            if (copyHashtagsBtn) {
+                copyHashtagsBtn.addEventListener('click', handleCopyHashtags);
             }
             
-            // Event listener for navigation buttons
-            document.querySelectorAll('.nav-button').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const targetId = button.dataset.targetId;
-                    const targetSection = document.getElementById(targetId);
-                    if (targetSection) {
-                        targetSection.scrollIntoView({ behavior: 'smooth' });
-                    }
-                });
-            });
-
-            // Chat modal functionality
+            // Set up event listeners for chat modal
             const floatingChatButton = document.getElementById('floating-chat-button');
             const chatModalOverlay = document.getElementById('chat-modal-overlay');
             const chatCloseButton = document.getElementById('chat-close-button');
+            const chatForm = document.getElementById('chatForm');
 
-            if (floatingChatButton) {
-                floatingChatButton.addEventListener('click', () => {
-                    chatModalOverlay.classList.add('active');
-                });
-            }
+            floatingChatButton.addEventListener('click', () => {
+                chatModalOverlay.classList.add('active');
+                document.getElementById('chatInput').focus();
+            });
 
-            if (chatCloseButton) {
-                chatCloseButton.addEventListener('click', () => {
+            chatCloseButton.addEventListener('click', () => {
+                chatModalOverlay.classList.remove('active');
+            });
+            
+            chatModalOverlay.addEventListener('click', (event) => {
+                if (event.target === chatModalOverlay) {
                     chatModalOverlay.classList.remove('active');
-                });
-            }
+                }
+            });
             
-            // Click outside the modal to close it
-            if (chatModalOverlay) {
-                chatModalOverlay.addEventListener('click', (e) => {
-                    if (e.target === chatModalOverlay) {
-                        chatModalOverlay.classList.remove('active');
-                    }
-                });
-            }
+            chatForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const chatInput = document.getElementById('chatInput');
+                const message = chatInput.value.trim();
+                if (message) {
+                    sendMessageToBot(message);
+                    chatInput.value = '';
+                }
+            });
             
-        });
+            // Initial welcome message from the bot
+            renderMessage('dek-fao-ran', "สวัสดีครับ ผม 'เด็กเฝ้าร้าน' ผู้ช่วยประจำ Kant Klao Shop มีอะไรให้ผมช่วยไหมครับ?");
+
+        };
     </script>
 </body>
 </html>
